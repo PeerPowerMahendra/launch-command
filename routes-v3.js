@@ -7,7 +7,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 
-const { runEngine, generationMode, SYSTEM_PROMPT, httpError, mapEngineError } = require("./engine");
+const { runEngine, generationMode, SYSTEM_PROMPT, httpError, streamJson } = require("./engine");
 const { V3_CAMPAIGN_SCHEMA, V3_SHAPE_INSTRUCTIONS, buildBriefV3, normalizeV3 } = require("./v3-campaign");
 const { buildDemoCampaignV3 } = require("./demo-campaign");
 
@@ -95,14 +95,20 @@ module.exports = function createV3Router({ DATA_DIR }) {
       return res.status(400).json({ error: `Missing required fields: ${missing.join(", ")}` });
     }
 
+    // Manual KPI targets survive regeneration — carry them onto the new campaign.
+    const prior = readJson(CAMPAIGN_FILE, {});
+    const priorKpis = prior.campaign && prior.campaign.kpis;
+
     // No AI connected → static sample data; the frontend shows the demo popup.
     if (generationMode() === "demo") {
       const campaign = buildDemoCampaignV3(b);
+      if (priorKpis) campaign.kpis = priorKpis;
       writeJson(CAMPAIGN_FILE, { brief: b, campaign, generated_at: new Date().toISOString(), demo: true });
       return res.json({ ...campaign, demo: true });
     }
 
-    try {
+    // Streamed with heartbeats so 2-5 minute local-engine runs survive tunnels.
+    streamJson(res, (async () => {
       const raw = await runEngine({
         system: SYSTEM_PROMPT,
         prompt: buildBriefV3(b),
@@ -112,11 +118,10 @@ module.exports = function createV3Router({ DATA_DIR }) {
         timeoutMs: 420000,
       });
       const campaign = normalizeV3(raw);
+      if (priorKpis) campaign.kpis = priorKpis;
       writeJson(CAMPAIGN_FILE, { brief: b, campaign, generated_at: new Date().toISOString() });
-      res.json(campaign);
-    } catch (err) {
-      mapEngineError(err, res);
-    }
+      return campaign;
+    })());
   });
 
   router.get("/campaign", (req, res) => {

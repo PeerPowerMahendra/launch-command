@@ -163,6 +163,48 @@ PERSONA RULES
 - persona.name is a realistic first name for the persona. persona.secondary is one sentence naming a plausible secondary audience.`;
 }
 
+/* Error → plain payload (for responses that already sent their 200 header). */
+function engineErrorPayload(err) {
+  if (err.httpStatus) return { status: err.httpStatus, error: err.message };
+  if (err instanceof Anthropic.AuthenticationError) {
+    return { status: 500, error: "Anthropic API key is missing or invalid. Add ANTHROPIC_API_KEY to your .env file and restart the server." };
+  }
+  if (err instanceof Anthropic.RateLimitError) {
+    return { status: 429, error: "Rate limited by the Anthropic API. Wait a moment and try again." };
+  }
+  if (err instanceof Anthropic.APIConnectionError) {
+    return { status: 502, error: "Could not reach the Anthropic API. Check your internet connection." };
+  }
+  if (err instanceof Anthropic.APIError) {
+    return { status: 502, error: `Anthropic API error (${err.status}): ${err.message}` };
+  }
+  return { status: 500, error: "Unexpected server error during generation." };
+}
+
+/* Long-running JSON response with whitespace heartbeats so tunnels and
+   proxies (Cloudflare ~100s, Netlify ~26s) don't kill the connection while
+   the engine works. Leading whitespace is valid JSON, so the client's
+   res.json() parses unchanged. Errors arrive as 200 + {error} — clients
+   must check data.error as well as res.ok. */
+function streamJson(res, work) {
+  res.writeHead(200, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-cache",
+  });
+  const heartbeat = setInterval(() => res.write(" "), 10000);
+  work
+    .then((obj) => {
+      clearInterval(heartbeat);
+      res.end(JSON.stringify(obj));
+    })
+    .catch((err) => {
+      clearInterval(heartbeat);
+      const payload = engineErrorPayload(err);
+      if (payload.status >= 500) console.error("Generation failed:", err);
+      res.end(JSON.stringify({ error: payload.error }));
+    });
+}
+
 /* Shared route-level error mapping for generation endpoints. */
 function mapEngineError(err, res) {
   if (err.httpStatus) {
@@ -194,4 +236,6 @@ module.exports = {
   SYSTEM_PROMPT,
   briefCore,
   mapEngineError,
+  engineErrorPayload,
+  streamJson,
 };

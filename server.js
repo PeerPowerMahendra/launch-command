@@ -9,7 +9,8 @@ const {
   runEngine,
   SYSTEM_PROMPT,
   briefCore,
-  mapEngineError,
+  httpError,
+  streamJson,
 } = require("./engine");
 const { buildDemoCampaign } = require("./demo-campaign");
 
@@ -30,6 +31,15 @@ const BOARD_FILE = path.join(DATA_DIR, "board.json");
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(path.join(__dirname, "public")));
+
+/* CORS — the public Netlify frontend calls this API through a tunnel. */
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 
 /* ------------------------------------------------------------------ */
 /* v2 campaign generation (contract unchanged)                          */
@@ -161,7 +171,8 @@ app.post("/api/generate", async (req, res) => {
     return res.json({ ...buildDemoCampaign(b), demo: true });
   }
 
-  try {
+  // Streamed with heartbeats so long generations survive tunnels/proxies.
+  streamJson(res, (async () => {
     const campaign = await runEngine({
       system: SYSTEM_PROMPT,
       prompt: buildBrief(b),
@@ -173,13 +184,11 @@ app.post("/api/generate", async (req, res) => {
         !Array.isArray(campaign.ads) || campaign.ads.length !== 3 ||
         !Array.isArray(campaign.emails) || campaign.emails.length !== 3 ||
         !campaign.persona || !campaign.positioning) {
-      return res.status(502).json({ error: "The model returned an incomplete campaign. Please try again." });
+      throw httpError(502, "The model returned an incomplete campaign. Please try again.");
     }
 
-    res.json(campaign);
-  } catch (err) {
-    mapEngineError(err, res);
-  }
+    return campaign;
+  })());
 });
 
 /* ------------------------------------------------------------------ */

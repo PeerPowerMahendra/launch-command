@@ -44,7 +44,8 @@
       body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
+    // streamed endpoints report failures as 200 + {error} (see engine.js streamJson)
+    if (!res.ok || (data && data.error)) {
       const err = new Error(data.error || `Request failed (HTTP ${res.status})`);
       err.status = res.status;
       err.data = data;

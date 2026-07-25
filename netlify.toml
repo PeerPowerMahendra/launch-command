@@ -1,0 +1,8 @@
+# Launch Command — Netlify config
+# Static frontend only. The API lives on the machine running `npm run dev`,
+# reached through a tunnel — see public/api-base.js (TUNNEL_API_BASE).
+
+[build]
+  publish = "public"
+
+# No functions, no build command: plain static deploy.

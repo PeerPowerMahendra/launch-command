@@ -121,6 +121,28 @@ There are two ways — the app picks one automatically when you restart it:
 
 The app checks in this order: API key → Claude Code CLI → Demo mode. The sidebar badge always tells you which engine is active.
 
+## Putting it on the internet (Netlify + your local Claude)
+
+The public site lives at **https://launch-command-suite.netlify.app**. The architecture is deliberately unusual: Netlify only hosts the pages — **every API call travels through a secure tunnel back to this computer**, so generation runs on your local Claude with no API key and no per-call cost.
+
+```
+visitor's browser → Netlify (static pages) → Cloudflare tunnel → this Mac (npm run dev + local Claude)
+```
+
+To publish (or re-publish after a reboot):
+
+```
+./publish.sh
+```
+
+The script starts the local server and tunnel if needed, points the frontend at the tunnel, and deploys. Three things to know:
+
+- **The public site only works while this computer is on**, with the server and tunnel running. Close the laptop → visitors see "backend unreachable" (the pages still load).
+- **Anyone with the URL uses *your* Claude** when they hit Generate — share the link with people you trust, don't post it publicly.
+- The free tunnel URL changes each time the tunnel restarts — that's why `./publish.sh` exists; it re-wires and re-deploys in one step (~90 seconds, most of it a deliberate DNS wait).
+
+When you go public for real: add `ANTHROPIC_API_KEY` on a proper server (or convert the backend to serverless), and this tunnel setup retires gracefully — nothing in the frontend changes except `api-base.js`.
+
 ## Two versions, one toggle
 
 A floating **V2 | V3** pill in the corner of every page switches between the two versions. Both run from the same server; nothing to configure.

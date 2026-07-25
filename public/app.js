@@ -157,7 +157,8 @@ genForm.addEventListener("submit", async (e) => {
       body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `Generation failed (HTTP ${res.status})`);
+    // streamed endpoint reports failures as 200 + {error} (survives tunnels)
+    if (!res.ok || data.error) throw new Error(data.error || `Generation failed (HTTP ${res.status})`);
 
     populateCampaign(data);
 
