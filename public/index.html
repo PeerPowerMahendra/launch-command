@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Launch Command — Campaign Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400;1,8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ============ SIDEBAR / TOPBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">▲</div>
+      <div class="brand-text">
+        <div class="brand-name">Launch<br />Command</div>
+        <div class="brand-sub">Campaign Workspace</div>
+      </div>
+    </div>
+
+    <div class="side-campaign">
+      <div class="side-label">Active campaign</div>
+      <div id="side-campaign-name" class="side-campaign-name">—</div>
+      <div id="side-campaign-meta" class="side-campaign-meta">Nothing generated yet</div>
+    </div>
+
+    <nav class="nav" aria-label="Modules">
+      <a href="#m00" class="nav-link"><span class="nav-num">00</span><span class="nav-label">Generate Campaign</span></a>
+      <a href="#m01" class="nav-link"><span class="nav-num">01</span><span class="nav-label">Executive Summary</span><span class="nav-state" data-state="pending" aria-hidden="true"></span></a>
+      <a href="#m02" class="nav-link"><span class="nav-num">02</span><span class="nav-label">Ad Matrix</span><span class="nav-state" data-state="pending" aria-hidden="true"></span></a>
+      <a href="#m03" class="nav-link"><span class="nav-num">03</span><span class="nav-label">Email Blueprint</span><span class="nav-state" data-state="pending" aria-hidden="true"></span></a>
+      <a href="#m04" class="nav-link"><span class="nav-num">04</span><span class="nav-label">Distribution Log</span></a>
+      <a href="#m05" class="nav-link"><span class="nav-num">05</span><span class="nav-label">Task Board</span></a>
+    </nav>
+
+    <div class="side-progress" aria-hidden="true">
+      <div class="side-progress-track"><div id="side-progress-fill" class="side-progress-fill"></div></div>
+    </div>
+    <div id="engine-badge" class="engine-badge" title="Which engine generates your campaigns">
+      <span class="engine-dot"></span><span id="engine-text">Engine · detecting…</span>
+    </div>
+    <div class="sidebar-foot">v2.0 · single-user · local</div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <div id="error-banner" class="error-banner" role="alert" hidden>
+      <span class="error-icon" aria-hidden="true">✕</span>
+      <span id="error-text"></span>
+      <button id="error-dismiss" class="error-dismiss" type="button">Dismiss</button>
+    </div>
+
+    <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+    <!-- ======== 00 GENERATE ======== -->
+    <section id="m00" class="module module-hero">
+      <div class="hero">
+        <div class="hero-eyebrow"><span class="module-num">00</span><span class="hero-eyebrow-text">Input · one brief drives everything below</span></div>
+        <h1 class="hero-title">Brief once.<br />Launch everything.</h1>
+        <p class="hero-desc">Describe the product one time. The AI drafts the persona, the positioning, three ad angles, and a three-touch email sequence — every line stays editable, nothing is locked.</p>
+        <ul class="spec-strip" aria-label="What gets generated">
+          <li><b>01</b> persona</li>
+          <li><b>01</b> positioning</li>
+          <li><b>03</b> ad variants</li>
+          <li><b>03</b> lifecycle emails</li>
+        </ul>
+      </div>
+
+      <form id="gen-form" class="gen-card" autocomplete="off">
+        <div class="gen-card-head">
+          <span class="gen-card-title">Input Brief</span>
+          <button id="try-example" class="ghost-btn" type="button">Try an example</button>
+        </div>
+
+        <div class="gen-section">
+          <div class="gen-legend">01 · The product</div>
+          <div class="gen-grid">
+            <div class="field">
+              <label for="f-name">Product / Brand Name</label>
+              <input id="f-name" type="text" required placeholder="e.g. SpineAlign Pro" />
+            </div>
+            <div class="field">
+              <label for="f-category">Category</label>
+              <input id="f-category" type="text" required placeholder="e.g. Ergonomic office chair" />
+            </div>
+            <div class="field">
+              <label for="f-price">Price Point</label>
+              <input id="f-price" type="text" required placeholder="e.g. $349 one-time" />
+            </div>
+            <div class="field">
+              <label for="f-tone">Brand Tone</label>
+              <select id="f-tone" required>
+                <option>Confident and direct</option>
+                <option>Warm and reassuring</option>
+                <option>Playful and bold</option>
+                <option>Premium and minimal</option>
+                <option>Scientific and credible</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="gen-section">
+          <div class="gen-legend">02 · The problem &amp; the edge</div>
+          <div class="gen-grid">
+            <div class="field span2">
+              <label for="f-problem">Core Problem It Solves</label>
+              <textarea id="f-problem" rows="3" required placeholder="The specific, painful problem your customer has right now"></textarea>
+            </div>
+            <div class="field span2">
+              <label for="f-mechanism">Signature Mechanism — what makes it different</label>
+              <textarea id="f-mechanism" rows="3" required placeholder="The unique method, ingredient, or design that makes it work"></textarea>
+            </div>
+            <div class="field span2">
+              <label for="f-audience">Target Audience <span class="label-note">optional — leave blank and the AI will infer who has this problem</span></label>
+              <textarea id="f-audience" rows="2" placeholder="Leave blank to let the AI infer the persona from the problem itself"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="gen-section">
+          <div class="gen-legend">03 · The market &amp; the offer</div>
+          <div class="gen-grid">
+            <div class="field">
+              <label for="f-competitor">Main Competitor / Status Quo</label>
+              <input id="f-competitor" type="text" required placeholder="What they use or do today instead" />
+            </div>
+            <div class="field">
+              <label for="f-offer">Launch Offer</label>
+              <input id="f-offer" type="text" required placeholder="e.g. 20% off first 200 orders, ends Friday" />
+            </div>
+          </div>
+        </div>
+
+        <div class="gen-foot">
+          <button id="gen-btn" type="submit" class="gen-btn">
+            <span class="gen-btn-spinner" hidden aria-hidden="true"></span>
+            <span class="gen-btn-label">Generate campaign</span>
+            <span class="gen-btn-arrow" aria-hidden="true">→</span>
+          </button>
+          <span id="gen-hint" class="gen-hint">Every output stays editable</span>
+        </div>
+      </form>
+    </section>
+
+    <!-- ======== 01 EXECUTIVE SUMMARY ======== -->
+    <section id="m01" class="module ai-module">
+      <div class="module-head">
+        <span class="module-num">01</span>
+        <h2>Executive Campaign Summary</h2>
+        <span class="await-badge">Awaiting brief</span>
+        <span class="stale-badge">Stale — regeneration failed</span>
+      </div>
+      <p class="module-desc">Who we are talking to, what we stand for, and the numbers that define success. KPI targets are yours to set — they are business decisions, not creative ones.</p>
+
+      <div class="summary-grid">
+        <div class="card persona-card">
+          <div class="card-tag tag-blue">Target Audience</div>
+          <div class="persona-ident">
+            <span class="ai-field persona-name" data-field="persona.name" data-placeholder="Persona name" contenteditable="true"></span>
+            <span class="persona-meta">
+              <span class="ai-field" data-field="persona.age_range" data-placeholder="Age range" contenteditable="true"></span>
+              <span class="dot-sep" aria-hidden="true">·</span>
+              <span class="ai-field" data-field="persona.location" data-placeholder="Location" contenteditable="true"></span>
+            </span>
+          </div>
+          <ul class="persona-list">
+            <li><span class="li-label">Pain point</span><span class="ai-field" data-field="persona.pain_point" data-placeholder="Awaiting generation" contenteditable="true"></span></li>
+            <li><span class="li-label">Current alternative</span><span class="ai-field" data-field="persona.alternative" data-placeholder="Awaiting generation" contenteditable="true"></span></li>
+            <li><span class="li-label">Core desire</span><span class="ai-field" data-field="persona.core_desire" data-placeholder="Awaiting generation" contenteditable="true"></span></li>
+            <li><span class="li-label">Platform habits</span><span class="ai-field" data-field="persona.platforms" data-placeholder="Awaiting generation" contenteditable="true"></span></li>
+          </ul>
+          <div class="persona-secondary">
+            <span class="li-label">Secondary audience</span>
+            <span class="ai-field" data-field="persona.secondary" data-placeholder="Awaiting generation" contenteditable="true"></span>
+          </div>
+        </div>
+
+        <div class="card positioning-card">
+          <button class="copy-btn" type="button" aria-label="Copy positioning statement">Copy</button>
+          <div class="card-tag tag-blue">Core Positioning Statement</div>
+          <blockquote class="positioning-quote ai-field" data-field="positioning" data-placeholder="Your positioning statement will appear here after generation." contenteditable="true"></blockquote>
+          <div class="positioning-note">One sentence, spoken against the status quo. Use it everywhere the brand opens its mouth.</div>
+        </div>
+      </div>
+
+      <div class="card kpi-card">
+        <div class="card-tag tag-amber">KPI Targets — Manual Entry</div>
+        <div class="table-scroll">
+          <table class="data-table kpi-table">
+            <thead>
+              <tr><th>Metric</th><th>Target</th><th>Window</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Launch Reach</td><td><span class="chip-input" data-placeholder="Set target" contenteditable="true"></span></td><td><span class="chip-input" data-placeholder="Set window" contenteditable="true"></span></td></tr>
+              <tr><td>CTR</td><td><span class="chip-input" data-placeholder="Set target" contenteditable="true"></span></td><td><span class="chip-input" data-placeholder="Set window" contenteditable="true"></span></td></tr>
+              <tr><td>CAC</td><td><span class="chip-input" data-placeholder="Set target" contenteditable="true"></span></td><td><span class="chip-input" data-placeholder="Set window" contenteditable="true"></span></td></tr>
+              <tr><td>Email Open Rate</td><td><span class="chip-input" data-placeholder="Set target" contenteditable="true"></span></td><td><span class="chip-input" data-placeholder="Set window" contenteditable="true"></span></td></tr>
+              <tr><td>Conversion Rate</td><td><span class="chip-input" data-placeholder="Set target" contenteditable="true"></span></td><td><span class="chip-input" data-placeholder="Set window" contenteditable="true"></span></td></tr>
+              <tr><td>ROAS</td><td><span class="chip-input" data-placeholder="Set target" contenteditable="true"></span></td><td><span class="chip-input" data-placeholder="Set window" contenteditable="true"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== 02 AD MATRIX ======== -->
+    <section id="m02" class="module ai-module">
+      <div class="module-head">
+        <span class="module-num">02</span>
+        <h2>Direct-Response Ad Matrix</h2>
+        <span class="await-badge">Awaiting brief</span>
+        <span class="stale-badge">Stale — regeneration failed</span>
+      </div>
+      <p class="module-desc">Three angles, one funnel: interrupt the scroll, earn the trust, close with the offer. Click any line to revise it.</p>
+
+      <div class="ad-grid">
+        <article class="card ad-card ad-hook">
+          <button class="copy-btn" type="button" aria-label="Copy ad variant A">Copy</button>
+          <div class="ad-variant">Variant A</div>
+          <div class="card-tag tag-amber">Hook-Led · Pattern Interrupt</div>
+          <div class="ad-block"><span class="li-label">Primary Text <em class="limit">≤32 words</em></span><span class="ai-field" data-field="ads.0.primary_text" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Headline <em class="limit">≤8 words</em></span><span class="ai-field ad-headline" data-field="ads.0.headline" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Description <em class="limit">≤14 words</em></span><span class="ai-field" data-field="ads.0.description" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Visual Direction</span><span class="ai-field" data-field="ads.0.visual" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">CTA</span><span class="ai-field ad-cta" data-field="ads.0.cta" data-placeholder="—" contenteditable="true"></span></div>
+          <div class="ad-rationale"><span class="li-label">Why this works</span><span class="ai-field" data-field="ads.0.rationale" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+        </article>
+
+        <article class="card ad-card ad-story">
+          <button class="copy-btn" type="button" aria-label="Copy ad variant B">Copy</button>
+          <div class="ad-variant">Variant B</div>
+          <div class="card-tag tag-blue">Story-Led · Trust &amp; Relatability</div>
+          <div class="ad-block"><span class="li-label">Primary Text <em class="limit">≤32 words</em></span><span class="ai-field" data-field="ads.1.primary_text" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Headline <em class="limit">≤8 words</em></span><span class="ai-field ad-headline" data-field="ads.1.headline" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Description <em class="limit">≤14 words</em></span><span class="ai-field" data-field="ads.1.description" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Visual Direction</span><span class="ai-field" data-field="ads.1.visual" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">CTA</span><span class="ai-field ad-cta" data-field="ads.1.cta" data-placeholder="—" contenteditable="true"></span></div>
+          <div class="ad-rationale"><span class="li-label">Why this works</span><span class="ai-field" data-field="ads.1.rationale" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+        </article>
+
+        <article class="card ad-card ad-offer">
+          <button class="copy-btn" type="button" aria-label="Copy ad variant C">Copy</button>
+          <div class="ad-variant">Variant C</div>
+          <div class="card-tag tag-sage">Offer-Led · Conversion Closer</div>
+          <div class="ad-block"><span class="li-label">Primary Text <em class="limit">≤32 words</em></span><span class="ai-field" data-field="ads.2.primary_text" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Headline <em class="limit">≤8 words</em></span><span class="ai-field ad-headline" data-field="ads.2.headline" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Description <em class="limit">≤14 words</em></span><span class="ai-field" data-field="ads.2.description" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">Visual Direction</span><span class="ai-field" data-field="ads.2.visual" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+          <div class="ad-block"><span class="li-label">CTA</span><span class="ai-field ad-cta" data-field="ads.2.cta" data-placeholder="—" contenteditable="true"></span></div>
+          <div class="ad-rationale"><span class="li-label">Why this works</span><span class="ai-field" data-field="ads.2.rationale" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======== 03 EMAIL BLUEPRINT ======== -->
+    <section id="m03" class="module ai-module">
+      <div class="module-head">
+        <span class="module-num">03</span>
+        <h2>Lifecycle Email Blueprint</h2>
+        <span class="await-badge">Awaiting brief</span>
+        <span class="stale-badge">Stale — regeneration failed</span>
+      </div>
+      <p class="module-desc">A three-touch launch sequence: announce, deepen, then close with urgency. Send timing is fixed to the launch window.</p>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot dot-blue" aria-hidden="true">1</div>
+          <div class="card email-card">
+            <button class="copy-btn" type="button" aria-label="Copy email 1">Copy</button>
+            <div class="email-head">
+              <span class="card-tag tag-blue">Email 1 · Announcement</span>
+              <span class="email-send">Send: launch day</span>
+            </div>
+            <div class="email-row"><span class="li-label">Subject <em class="limit">≤9 words</em></span><span class="ai-field email-subject" data-field="emails.0.subject" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Preview</span><span class="ai-field" data-field="emails.0.preview" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Goal</span><span class="ai-field" data-field="emails.0.goal" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Body summary <em class="limit">≤26 words</em></span><span class="ai-field" data-field="emails.0.body" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">CTA</span><span class="ai-field ad-cta" data-field="emails.0.cta" data-placeholder="—" contenteditable="true"></span></div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot dot-sage" aria-hidden="true">2</div>
+          <div class="card email-card">
+            <button class="copy-btn" type="button" aria-label="Copy email 2">Copy</button>
+            <div class="email-head">
+              <span class="card-tag tag-sage">Email 2 · Benefit Deep-Dive</span>
+              <span class="email-send">Send: +2 days</span>
+            </div>
+            <div class="email-row"><span class="li-label">Subject <em class="limit">≤9 words</em></span><span class="ai-field email-subject" data-field="emails.1.subject" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Preview</span><span class="ai-field" data-field="emails.1.preview" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Goal</span><span class="ai-field" data-field="emails.1.goal" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Body summary <em class="limit">≤26 words</em></span><span class="ai-field" data-field="emails.1.body" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">CTA</span><span class="ai-field ad-cta" data-field="emails.1.cta" data-placeholder="—" contenteditable="true"></span></div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot dot-rose" aria-hidden="true">3</div>
+          <div class="card email-card">
+            <button class="copy-btn" type="button" aria-label="Copy email 3">Copy</button>
+            <div class="email-head">
+              <span class="card-tag tag-rose">Email 3 · Urgency / Scarcity</span>
+              <span class="email-send">Send: final 48 hours</span>
+            </div>
+            <div class="email-row"><span class="li-label">Subject <em class="limit">≤9 words</em></span><span class="ai-field email-subject" data-field="emails.2.subject" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Preview</span><span class="ai-field" data-field="emails.2.preview" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Goal</span><span class="ai-field" data-field="emails.2.goal" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">Body summary <em class="limit">≤26 words</em></span><span class="ai-field" data-field="emails.2.body" data-placeholder="Awaiting generation" contenteditable="true"></span></div>
+            <div class="email-row"><span class="li-label">CTA</span><span class="ai-field ad-cta" data-field="emails.2.cta" data-placeholder="—" contenteditable="true"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== 04 DISTRIBUTION LOG ======== -->
+    <section id="m04" class="module">
+      <div class="module-head">
+        <span class="module-num">04</span>
+        <h2>Content Distribution Log</h2>
+      </div>
+      <p class="module-desc">Every asset gets repurposed. Map each piece to its second life, then set your posting cadence in the amber cells.</p>
+
+      <div class="card table-card">
+        <div class="table-scroll">
+          <table class="data-table dist-table">
+            <thead>
+              <tr><th>Source Asset</th><th>Repurposed Format</th><th>Platform</th><th>Format Notes</th><th>Cadence</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ad Variant A <span class="td-sub">hook-led</span></td>
+                <td>Short-form video</td>
+                <td>Reels / TikTok</td>
+                <td>Trim to first-3s hook, add burned-in captions</td>
+                <td><span class="chip-input" data-placeholder="Set cadence" contenteditable="true">Day 1</span></td>
+              </tr>
+              <tr>
+                <td>Ad Variant B <span class="td-sub">story-led</span></td>
+                <td>Carousel</td>
+                <td>Instagram feed / LinkedIn</td>
+                <td>Split story beats into 5 frames, CTA on final frame</td>
+                <td><span class="chip-input" data-placeholder="Set cadence" contenteditable="true">Day 2</span></td>
+              </tr>
+              <tr>
+                <td>Ad Variant C <span class="td-sub">offer-led</span></td>
+                <td>Story / status</td>
+                <td>IG Stories / WhatsApp Status</td>
+                <td>Countdown sticker + tap-through to offer page</td>
+                <td><span class="chip-input" data-placeholder="Set cadence" contenteditable="true"></span></td>
+              </tr>
+              <tr>
+                <td>Email 1 <span class="td-sub">announcement</span></td>
+                <td>Thread</td>
+                <td>X / LinkedIn</td>
+                <td>Rewrite body as a 6-post thread, CTA in final post</td>
+                <td><span class="chip-input" data-placeholder="Set cadence" contenteditable="true"></span></td>
+              </tr>
+              <tr>
+                <td>Email 2 <span class="td-sub">deep-dive</span></td>
+                <td>Long-form recap</td>
+                <td>YouTube / blog</td>
+                <td>Expand mechanism explanation into 800-word post or 3-min video</td>
+                <td><span class="chip-input" data-placeholder="Set cadence" contenteditable="true"></span></td>
+              </tr>
+              <tr>
+                <td>Positioning statement</td>
+                <td>Quote graphic</td>
+                <td>Pinterest</td>
+                <td>Pull-quote set in brand type on paper background</td>
+                <td><span class="chip-input" data-placeholder="Set cadence" contenteditable="true"></span></td>
+              </tr>
+              <tr>
+                <td>Persona pain point</td>
+                <td>Community post</td>
+                <td>FB group / Discord</td>
+                <td>Open a discussion thread around the pain point — no hard sell</td>
+                <td><span class="chip-input" data-placeholder="Set cadence" contenteditable="true"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== 05 TASK BOARD ======== -->
+    <section id="m05" class="module">
+      <div class="module-head">
+        <span class="module-num">05</span>
+        <h2>Task Board</h2>
+      </div>
+      <p class="module-desc">Launch execution, Jira-style. Drag cards between columns — every change saves to the backend automatically.</p>
+
+      <div class="board-toolbar">
+        <span id="save-status" class="save-status"><span class="save-dot" aria-hidden="true"></span><span id="save-text">Loading…</span></span>
+        <span class="board-toolbar-right">
+          <span id="board-meta" class="board-meta"></span>
+          <button id="board-reset" class="ghost-btn danger" type="button">Reset board to defaults</button>
+        </span>
+      </div>
+
+      <div class="board-scroll">
+        <div id="board" class="board"></div>
+      </div>
+    </section>
+
+    <footer class="page-foot">Launch Command · generated copy is a first draft — edit everything.</footer>
+  </main>
+
+  <script src="app.js"></script>
+  <script src="/version-toggle.js" defer></script>
+</body>
+</html>

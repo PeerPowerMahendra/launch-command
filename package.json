@@ -1,0 +1,15 @@
+{
+  "name": "launch-command",
+  "version": "1.0.0",
+  "description": "Brand-launch campaign workspace: AI copy generator + editable campaign doc + Kanban task board",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}
