@@ -240,6 +240,7 @@ button { font: inherit; }
 
 .engine-badge[data-mode="local"] .engine-dot { background: var(--amber); }
 .engine-badge[data-mode="api"]   .engine-dot { background: var(--sage); }
+.engine-badge[data-mode="demo"]  .engine-dot { background: var(--rose); }
 
 .sidebar-foot {
   margin-top: 14px;
@@ -1545,3 +1546,100 @@ body.has-campaign .await-badge { display: none; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ================================================================
+   DEMO-MODE POPUP
+   ================================================================ */
+
+.demo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.demo-modal[hidden] { display: none; }
+
+.demo-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(22, 26, 31, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.demo-modal-card {
+  position: relative;
+  max-width: 460px;
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--rose);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  padding: 26px 28px 24px;
+  animation: demo-pop 0.28s var(--ease);
+}
+
+@keyframes demo-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.demo-modal-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rose);
+  background: var(--rose-soft);
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin-bottom: 12px;
+}
+
+.demo-modal-card h3 {
+  font-family: var(--font-display);
+  font-size: 21px;
+  margin-bottom: 10px;
+}
+
+.demo-modal-card p {
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+
+.demo-modal-card ul {
+  margin: 0 0 10px 20px;
+  color: var(--ink-soft);
+}
+
+.demo-modal-card li { margin-bottom: 4px; }
+
+.demo-modal-card code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: var(--paper-deep);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.demo-modal-btn {
+  margin-top: 8px;
+  width: 100%;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+  background: var(--ink);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.demo-modal-btn:hover { background: #2A3038; }

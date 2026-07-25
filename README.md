@@ -1,49 +1,47 @@
 # Launch Command
 
-A brand-launch campaign workspace: an AI copy generator, an editable campaign document, and a Jira-style Kanban task board — all in one scrollable page.
+A one-page workspace for planning a product launch. Fill in a short form about your product, press **Generate campaign**, and the app drafts:
 
-- **Frontend:** plain HTML/CSS/JS (`public/`), no build step.
-- **Backend:** small Express server (`server.js`) that (a) generates campaigns with Claude, and (b) persists the Kanban board to `data/board.json`.
+- a customer persona (who you're selling to),
+- a positioning statement,
+- three ad variants,
+- a three-email launch sequence.
 
-## Two generation engines — local now, API when you go public
+Every line it writes stays editable — just click on the text and type. There's also a drag-and-drop task board at the bottom to manage the launch work.
 
-The server picks its engine automatically at startup:
+## How to run it
 
-| Engine | When it's used | Cost | Setup |
-|---|---|---|---|
-| **Local Claude Code CLI** | Default — no API key present | Covered by your Claude Code subscription | None. Works today if `claude` is installed. |
-| **Anthropic API** (`claude-sonnet-5`) | `ANTHROPIC_API_KEY` is set in `.env` | Pay-per-token | Paste your key in `.env`, restart. |
+1. **One-time setup:** install [Node.js](https://nodejs.org) (the free "LTS" version), then open the Terminal app, go to this folder, and type:
 
-**Pre-launch workflow (now):** just run the app — it shells out to your local `claude` CLI in headless mode. No key, no per-call cost.
+   ```
+   npm install
+   ```
 
-**Go-public workflow (later):** `cp .env.example .env`, paste your key from https://platform.claude.com, restart. The server switches to the API automatically — no code changes. The API path uses structured outputs, so the campaign JSON is schema-guaranteed.
+2. **Start the app:**
 
-Check which engine is live: the startup log prints it, or `curl localhost:3000/api/status`. Force one with `GENERATION_MODE=api` or `GENERATION_MODE=claude-code` in `.env`.
+   ```
+   npm start
+   ```
 
-## Run it
+3. Open **http://localhost:3000** in your browser. That's it.
 
-```bash
-npm install
-npm run dev
-```
+To stop the app, go back to the Terminal and press `Ctrl + C`.
 
-Open **http://localhost:3000**. (`npm run dev` auto-restarts on file changes; `npm start` for a plain run; set `PORT` in `.env` to change the port.)
+## No AI connected? It still works — in Demo mode
 
-## Modules
+If the app can't find an AI to write with, it switches to **Demo mode**:
 
-| # | Module | What it does |
-|---|--------|--------------|
-| 00 | **Generate Campaign** | Product brief form → one click generates persona, positioning, ads, and emails. Target Audience is optional — leave it blank and the AI infers who has the problem. "Try an example" autofills a sample brief. |
-| 01 | **Executive Campaign Summary** | AI-populated persona + positioning statement; KPI targets are manual amber-chip inputs (business decisions, not creative ones). |
-| 02 | **Direct-Response Ad Matrix** | Three ad angles side by side: Hook-led, Story-led, Offer-led — each with copy, visual direction, CTA, and rationale. |
-| 03 | **Lifecycle Email Blueprint** | Three-email launch timeline: Announcement (launch day), Benefit Deep-Dive (+2 days), Urgency/Scarcity (final 48h). |
-| 04 | **Content Distribution Log** | Pre-seeded map of each asset to its repurposed format/platform; cadence cells are editable chips. |
-| 05 | **Task Board** | 5-column Kanban with drag-and-drop, inline editing, type/priority chips, owners, due dates. Every change persists to the backend (`data/board.json`). "Reset board to defaults" restores the seed tasks. |
+- The **Generate campaign** button still works, but it fills the page with **static sample data** instead of copy written for your brief.
+- A popup appears saying **"No AI is connected"**, so you always know you're looking at a sample, not real generated copy.
+- The badge at the bottom of the sidebar shows **Engine · Demo (no AI)**.
 
-## Notes for future me
+Demo mode is perfect for trying the app or showing it to someone without any setup.
 
-- All AI-generated text is directly editable — click any line and type. Dashed **amber chips** mean "you still need to fill this in"; plain text means "AI already wrote this."
-- If a regeneration fails, the previous copy is kept but modules 01–03 get a **Stale** badge so old data is never silently mistaken for fresh output.
-- Local engine can take **1–2 minutes** per generation (it's a full Claude Code headless run); the API engine is faster (~20s).
-- Board data lives in `data/board.json` (gitignored). Delete the file to force a re-seed, or use the Reset button.
-- To tweak the generation prompt/word limits, edit `SYSTEM_PROMPT`, `buildBrief()`, and `CAMPAIGN_SCHEMA` in `server.js`. `CLAUDE_CODE_MODEL` in `.env` picks the local engine's model (e.g. `sonnet`, `opus`, `haiku`).
+## Connecting a real AI (optional)
+
+There are two ways — the app picks one automatically when you restart it:
+
+1. **Claude Code CLI** — if the `claude` command is installed on this computer, the app uses it automatically. No key, no extra cost beyond your Claude subscription.
+2. **Anthropic API key** — copy the file `.env.example` to a new file named `.env`, paste your key from https://platform.claude.com inside it, and restart the app. This is pay-per-use.
+
+The app checks in this order: API key → Claude Code CLI → Demo mode. The sidebar badge always tells you which engine is active.

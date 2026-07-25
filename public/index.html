@@ -56,6 +56,25 @@
 
     <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
 
+    <!-- Demo-mode popup: shown when Generate returns static sample data -->
+    <div id="demo-modal" class="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-modal-title" hidden>
+      <div class="demo-modal-backdrop" data-demo-close></div>
+      <div class="demo-modal-card">
+        <div class="demo-modal-tag">Demo mode</div>
+        <h3 id="demo-modal-title">No AI is connected</h3>
+        <p>
+          What you're seeing is <b>static sample data</b> — it was not written for your brief.
+          To generate real campaign copy, connect an AI engine:
+        </p>
+        <ul>
+          <li>Install the <b>Claude Code CLI</b> (<code>claude</code>) on this computer, <i>or</i></li>
+          <li>Put an <b>Anthropic API key</b> in the <code>.env</code> file,</li>
+        </ul>
+        <p>then restart the app.</p>
+        <button id="demo-modal-ok" class="demo-modal-btn" type="button" data-demo-close>Got it — show the sample</button>
+      </div>
+    </div>
+
     <!-- ======== 00 GENERATE ======== -->
     <section id="m00" class="module module-hero">
       <div class="hero">

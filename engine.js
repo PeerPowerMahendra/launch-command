@@ -10,14 +10,34 @@
 /* ------------------------------------------------------------------ */
 
 const { execFile } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 const Anthropic = require("@anthropic-ai/sdk");
 
 const client = new Anthropic();
 
+/* Is the Claude Code CLI (`claude`) on the PATH? Checked once at startup. */
+let cliAvailable = null;
+function claudeCliAvailable() {
+  if (cliAvailable === null) {
+    cliAvailable = (process.env.PATH || "").split(path.delimiter).some((dir) => {
+      try {
+        fs.accessSync(path.join(dir, "claude"), fs.constants.X_OK);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  }
+  return cliAvailable;
+}
+
 function generationMode() {
   const forced = (process.env.GENERATION_MODE || "auto").toLowerCase();
-  if (forced === "api" || forced === "claude-code") return forced;
-  return process.env.ANTHROPIC_API_KEY ? "api" : "claude-code";
+  if (forced === "api" || forced === "claude-code" || forced === "demo") return forced;
+  if (process.env.ANTHROPIC_API_KEY) return "api";
+  if (claudeCliAvailable()) return "claude-code";
+  return "demo"; // no AI connected — endpoints serve static sample data instead
 }
 
 function httpError(status, message) {
@@ -143,6 +163,29 @@ PERSONA RULES
 - persona.name is a realistic first name for the persona. persona.secondary is one sentence naming a plausible secondary audience.`;
 }
 
+/* Shared route-level error mapping for generation endpoints. */
+function mapEngineError(err, res) {
+  if (err.httpStatus) {
+    return res.status(err.httpStatus).json({ error: err.message });
+  }
+  if (err instanceof Anthropic.AuthenticationError) {
+    return res.status(500).json({
+      error: "Anthropic API key is missing or invalid. Add ANTHROPIC_API_KEY to your .env file and restart the server.",
+    });
+  }
+  if (err instanceof Anthropic.RateLimitError) {
+    return res.status(429).json({ error: "Rate limited by the Anthropic API. Wait a moment and try again." });
+  }
+  if (err instanceof Anthropic.APIConnectionError) {
+    return res.status(502).json({ error: "Could not reach the Anthropic API. Check your internet connection." });
+  }
+  if (err instanceof Anthropic.APIError) {
+    return res.status(502).json({ error: `Anthropic API error (${err.status}): ${err.message}` });
+  }
+  console.error("Generation failed:", err);
+  return res.status(500).json({ error: "Unexpected server error during generation." });
+}
+
 module.exports = {
   generationMode,
   runEngine,
@@ -150,4 +193,5 @@ module.exports = {
   extractJson,
   SYSTEM_PROMPT,
   briefCore,
+  mapEngineError,
 };

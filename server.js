@@ -3,8 +3,24 @@ require("dotenv").config();
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const { execFile } = require("child_process");
-const Anthropic = require("@anthropic-ai/sdk");
+
+const {
+  generationMode,
+  runEngine,
+  SYSTEM_PROMPT,
+  briefCore,
+  mapEngineError,
+} = require("./engine");
+const { buildDemoCampaign } = require("./demo-campaign");
+
+/* v3 is local work-in-progress and not part of the published repo —
+   mount it only when its files are present. */
+let createV3Router = null;
+try {
+  createV3Router = require("./routes-v3");
+} catch {
+  createV3Router = null;
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,25 +32,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 /* ------------------------------------------------------------------ */
-/* Generation engine selection                                          */
-/*                                                                      */
-/*   "api"         — Anthropic API via ANTHROPIC_API_KEY (production)   */
-/*   "claude-code" — local Claude Code CLI in headless mode (`claude -p`)*/
-/*                                                                      */
-/* Default is auto: use the API when a key is set, otherwise fall back  */
-/* to the local Claude Code install. Override with GENERATION_MODE.     */
-/* ------------------------------------------------------------------ */
-
-function generationMode() {
-  const forced = (process.env.GENERATION_MODE || "auto").toLowerCase();
-  if (forced === "api" || forced === "claude-code") return forced;
-  return process.env.ANTHROPIC_API_KEY ? "api" : "claude-code";
-}
-
-const client = new Anthropic();
-
-/* ------------------------------------------------------------------ */
-/* Campaign schema + prompts                                            */
+/* v2 campaign generation (contract unchanged)                          */
 /* ------------------------------------------------------------------ */
 
 const CAMPAIGN_SCHEMA = {
@@ -101,34 +99,8 @@ const CAMPAIGN_SCHEMA = {
   additionalProperties: false,
 };
 
-const SYSTEM_PROMPT =
-  "You are a senior direct-response marketing strategist. You write tight, specific, " +
-  "non-generic launch copy grounded in the customer's real problem. You follow word " +
-  "limits strictly and never pad copy with marketing cliches.";
-
 function buildBrief(b) {
-  const audience = b.audience && b.audience.trim()
-    ? b.audience.trim()
-    : "(not provided — infer who realistically has this problem from the problem, category, mechanism, and price point)";
-
-  return `Create a complete brand-launch campaign for the product below.
-
-BRIEF
-- Product/Brand Name: ${b.name}
-- Category: ${b.category}
-- Price Point: ${b.price}
-- Core Problem It Solves: ${b.problem}
-- Signature Mechanism (what makes it different): ${b.mechanism}
-- Target Audience: ${audience}
-- Main Competitor / Status Quo: ${b.competitor}
-- Launch Offer: ${b.offer}
-- Brand Tone: ${b.tone}
-
-PERSONA RULES
-- Derive persona.pain_point directly from "Core Problem It Solves", restated from the customer's point of view (their frustration, their words) — not the brand's framing.
-- Then infer age_range, location, alternative (what they currently do instead), core_desire, and platforms from who would realistically have that exact problem, given the category and price point.
-- If a Target Audience was provided, treat it as a constraint layered on top of that inference. If it was not provided, infer the whole persona from the problem/category/mechanism alone — do NOT default to a generic audience.
-- persona.name is a realistic first name for the persona. persona.secondary is one sentence naming a plausible secondary audience.
+  return `${briefCore(b)}
 
 CAMPAIGN RULES
 - ads must contain exactly 3 items:
@@ -171,95 +143,6 @@ Respond with ONLY a single strict JSON object. No markdown fences, no commentary
   ]
 }`;
 
-/* ------------------------------------------------------------------ */
-/* Engine 1 — Anthropic API (production path)                           */
-/* ------------------------------------------------------------------ */
-
-async function generateViaApi(brief) {
-  const response = await client.messages.create({
-    model: "claude-sonnet-5",
-    max_tokens: 16000,
-    system: SYSTEM_PROMPT,
-    output_config: { format: { type: "json_schema", schema: CAMPAIGN_SCHEMA } },
-    messages: [{ role: "user", content: brief }],
-  });
-
-  if (response.stop_reason === "max_tokens") {
-    throw httpError(502, "Generation was cut off before completing. Please try again.");
-  }
-  if (response.stop_reason === "refusal") {
-    throw httpError(502, "The model declined to generate copy for this brief.");
-  }
-
-  const textBlock = response.content.find((block) => block.type === "text");
-  if (!textBlock) throw httpError(502, "The model returned no text output. Please try again.");
-  return JSON.parse(textBlock.text);
-}
-
-/* ------------------------------------------------------------------ */
-/* Engine 2 — local Claude Code CLI (backup / pre-launch path)          */
-/* ------------------------------------------------------------------ */
-
-function generateViaClaudeCode(brief) {
-  const prompt = `${SYSTEM_PROMPT}\n\n${brief}${JSON_SHAPE_INSTRUCTIONS}`;
-  const args = ["-p", prompt, "--output-format", "json"];
-  if (process.env.CLAUDE_CODE_MODEL) args.push("--model", process.env.CLAUDE_CODE_MODEL);
-
-  return new Promise((resolve, reject) => {
-    execFile(
-      "claude",
-      args,
-      { timeout: 240000, maxBuffer: 16 * 1024 * 1024 },
-      (err, stdout, stderr) => {
-        if (err) {
-          if (err.code === "ENOENT") {
-            return reject(httpError(500,
-              "Local generation needs the Claude Code CLI (`claude`) on your PATH, " +
-              "or add ANTHROPIC_API_KEY to .env to use the Anthropic API instead."));
-          }
-          if (err.killed) {
-            return reject(httpError(504, "Local Claude Code generation timed out. Please try again."));
-          }
-          const detail = (stderr || err.message || "").toString().trim().slice(0, 300);
-          return reject(httpError(502, `Local Claude Code generation failed. ${detail}`));
-        }
-
-        try {
-          // --output-format json wraps the answer in { result: "<text>", ... }
-          const envelope = JSON.parse(stdout);
-          const text = typeof envelope.result === "string" ? envelope.result : stdout;
-          resolve(extractJson(text));
-        } catch {
-          // Fall back to extracting JSON straight from stdout
-          try {
-            resolve(extractJson(stdout));
-          } catch {
-            reject(httpError(502, "Local Claude Code returned output that could not be parsed as campaign JSON. Please try again."));
-          }
-        }
-      }
-    );
-  });
-}
-
-/* Pull the first {...} JSON object out of a text blob (tolerates fences/preamble). */
-function extractJson(text) {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start === -1 || end === -1 || end <= start) throw new Error("no JSON object found");
-  return JSON.parse(text.slice(start, end + 1));
-}
-
-function httpError(status, message) {
-  const e = new Error(message);
-  e.httpStatus = status;
-  return e;
-}
-
-/* ------------------------------------------------------------------ */
-/* Routes                                                               */
-/* ------------------------------------------------------------------ */
-
 app.get("/api/status", (req, res) => {
   res.json({ mode: generationMode() });
 });
@@ -272,13 +155,19 @@ app.post("/api/generate", async (req, res) => {
     return res.status(400).json({ error: `Missing required fields: ${missing.join(", ")}` });
   }
 
-  const brief = buildBrief(b);
-  const mode = generationMode();
+  // No AI connected — serve the static sample campaign; the frontend
+  // shows a "no AI connected" popup when it sees the demo flag.
+  if (generationMode() === "demo") {
+    return res.json({ ...buildDemoCampaign(b), demo: true });
+  }
 
   try {
-    const campaign = mode === "api"
-      ? await generateViaApi(brief)
-      : await generateViaClaudeCode(brief);
+    const campaign = await runEngine({
+      system: SYSTEM_PROMPT,
+      prompt: buildBrief(b),
+      schema: CAMPAIGN_SCHEMA,
+      shapeInstructions: JSON_SHAPE_INSTRUCTIONS,
+    });
 
     if (!campaign || typeof campaign !== "object" ||
         !Array.isArray(campaign.ads) || campaign.ads.length !== 3 ||
@@ -289,30 +178,18 @@ app.post("/api/generate", async (req, res) => {
 
     res.json(campaign);
   } catch (err) {
-    if (err.httpStatus) {
-      return res.status(err.httpStatus).json({ error: err.message });
-    }
-    if (err instanceof Anthropic.AuthenticationError) {
-      return res.status(500).json({
-        error: "Anthropic API key is missing or invalid. Add ANTHROPIC_API_KEY to your .env file and restart the server.",
-      });
-    }
-    if (err instanceof Anthropic.RateLimitError) {
-      return res.status(429).json({ error: "Rate limited by the Anthropic API. Wait a moment and try again." });
-    }
-    if (err instanceof Anthropic.APIConnectionError) {
-      return res.status(502).json({ error: "Could not reach the Anthropic API. Check your internet connection." });
-    }
-    if (err instanceof Anthropic.APIError) {
-      return res.status(502).json({ error: `Anthropic API error (${err.status}): ${err.message}` });
-    }
-    console.error("Generation failed:", err);
-    res.status(500).json({ error: "Unexpected server error during generation." });
+    mapEngineError(err, res);
   }
 });
 
 /* ------------------------------------------------------------------ */
-/* Kanban board persistence                                             */
+/* v3 API                                                               */
+/* ------------------------------------------------------------------ */
+
+if (createV3Router) app.use("/api/v3", createV3Router({ DATA_DIR }));
+
+/* ------------------------------------------------------------------ */
+/* Kanban board persistence (v2, unchanged)                             */
 /* ------------------------------------------------------------------ */
 
 const SEED_TASKS = [
@@ -368,9 +245,13 @@ app.post("/api/board/reset", (req, res) => {
 app.listen(PORT, () => {
   const mode = generationMode();
   console.log(`Launch Command running at http://localhost:${PORT}`);
+  console.log(`  v2 workspace:  http://localhost:${PORT}/`);
+  if (createV3Router) console.log(`  v3 suite:      http://localhost:${PORT}/v3/`);
   console.log(
     mode === "api"
       ? "Generation engine: Anthropic API (claude-sonnet-5)"
-      : "Generation engine: local Claude Code CLI (no API key needed — add ANTHROPIC_API_KEY to .env to switch to the API)"
+      : mode === "claude-code"
+        ? "Generation engine: local Claude Code CLI (no API key needed — add ANTHROPIC_API_KEY to .env to switch to the API)"
+        : "Generation engine: DEMO MODE — no AI connected. Generate serves static sample data. Install the Claude Code CLI or add ANTHROPIC_API_KEY to .env for real generation."
   );
 });

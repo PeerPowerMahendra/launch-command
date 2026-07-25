@@ -1,5 +1,11 @@
 node_modules/
 .env
-data/board.json
+data/
 .DS_Store
 .gstack/
+
+# v3 work-in-progress — kept local, not pushed yet
+routes-v3.js
+v3-campaign.js
+public/v3/
+public/version-toggle.js

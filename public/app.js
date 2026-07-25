@@ -42,6 +42,24 @@ function hideError() {
 
 $("#error-dismiss").addEventListener("click", hideError);
 
+/* ---------------- demo-mode popup ---------------- */
+
+const demoModal = $("#demo-modal");
+
+function showDemoModal() {
+  demoModal.hidden = false;
+  $("#demo-modal-ok").focus();
+}
+
+function hideDemoModal() {
+  demoModal.hidden = true;
+}
+
+$$("[data-demo-close]", demoModal).forEach((el) => el.addEventListener("click", hideDemoModal));
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !demoModal.hidden) hideDemoModal();
+});
+
 /* ================================================================
    00 · CAMPAIGN GENERATION
    ================================================================ */
@@ -146,9 +164,16 @@ genForm.addEventListener("submit", async (e) => {
     // sidebar campaign readout
     const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     $("#side-campaign-name").textContent = payload.name.trim() || "Untitled campaign";
-    $("#side-campaign-meta").textContent = `${payload.tone} · drafted ${time}`;
+    $("#side-campaign-meta").textContent = data.demo
+      ? `Sample data · not generated`
+      : `${payload.tone} · drafted ${time}`;
 
-    toast("Campaign drafted — every field is editable");
+    if (data.demo) {
+      showDemoModal();
+      toast("Showing static sample data — no AI connected", "warn");
+    } else {
+      toast("Campaign drafted — every field is editable");
+    }
     $("#m01").scrollIntoView({ behavior: SCROLL_BEHAVIOR });
   } catch (err) {
     showError(err.message || "Generation failed.");
@@ -657,10 +682,14 @@ async function loadEngineStatus() {
       badge.dataset.mode = "api";
       text.textContent = "Engine · Anthropic API";
       if (hint) hint.textContent = "Takes ~20 seconds · every output stays editable";
-    } else {
+    } else if (mode === "claude-code") {
       badge.dataset.mode = "local";
       text.textContent = "Engine · Local Claude Code";
       if (hint) hint.textContent = "Takes 1–2 minutes on the local engine · every output stays editable";
+    } else {
+      badge.dataset.mode = "demo";
+      text.textContent = "Engine · Demo (no AI)";
+      if (hint) hint.textContent = "No AI connected — Generate shows static sample data instantly";
     }
   } catch {
     text.textContent = "Engine · offline";
