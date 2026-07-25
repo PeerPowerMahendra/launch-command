@@ -95,14 +95,29 @@ module.exports = function createV3Router({ DATA_DIR }) {
       return res.status(400).json({ error: `Missing required fields: ${missing.join(", ")}` });
     }
 
-    // Manual KPI targets survive regeneration — carry them onto the new campaign.
+    // KPI merge rule: user-entered targets are business decisions and win over
+    // freshly generated suggestions; generated values fill whatever is blank.
     const prior = readJson(CAMPAIGN_FILE, {});
     const priorKpis = prior.campaign && prior.campaign.kpis;
+    const mergeKpis = (generated) => {
+      if (!priorKpis) return generated || undefined;
+      const out = {};
+      const keys = new Set([...Object.keys(priorKpis), ...Object.keys(generated || {})]);
+      for (const key of keys) {
+        const user = priorKpis[key] || {};
+        const gen = (generated || {})[key] || {};
+        out[key] = {
+          target: (user.target && String(user.target).trim()) ? user.target : gen.target || "",
+          window: (user.window && String(user.window).trim()) ? user.window : gen.window || "",
+        };
+      }
+      return out;
+    };
 
     // No AI connected → static sample data; the frontend shows the demo popup.
     if (generationMode() === "demo") {
       const campaign = buildDemoCampaignV3(b);
-      if (priorKpis) campaign.kpis = priorKpis;
+      campaign.kpis = mergeKpis(campaign.kpis);
       writeJson(CAMPAIGN_FILE, { brief: b, campaign, generated_at: new Date().toISOString(), demo: true });
       return res.json({ ...campaign, demo: true });
     }
@@ -114,11 +129,11 @@ module.exports = function createV3Router({ DATA_DIR }) {
         prompt: buildBriefV3(b),
         schema: V3_CAMPAIGN_SCHEMA,
         shapeInstructions: V3_SHAPE_INSTRUCTIONS,
-        maxTokens: 24000,
-        timeoutMs: 420000,
+        maxTokens: 32000,
+        timeoutMs: 540000,
       });
       const campaign = normalizeV3(raw);
-      if (priorKpis) campaign.kpis = priorKpis;
+      campaign.kpis = mergeKpis(campaign.kpis);
       writeJson(CAMPAIGN_FILE, { brief: b, campaign, generated_at: new Date().toISOString() });
       return campaign;
     })());

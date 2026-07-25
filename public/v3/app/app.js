@@ -18,7 +18,7 @@
     pendingKpis: null, // KPI edits made before any campaign exists
   };
 
-  const AI_SECTIONS = ["m01", "m02", "m03"];
+  const AI_SECTIONS = ["m01", "m02", "m03", "m04", "m05"];
   const SCROLL_BEHAVIOR = REDUCED_MOTION ? "auto" : "smooth";
 
   const LIMITS = {
@@ -116,6 +116,7 @@
       `</div>` +
       `</div>` +
       `<div class="placement-notes">` +
+      `<div class="pn-row targeting-row"><span class="k-label">Targeting</span>${edit(`${p}.targeting`, ad.targeting, { ph: "Audience stack" })}</div>` +
       ["feed", "reels", "stories"]
         .map((k) => `<div class="pn-row"><span class="k-label">${k}</span>${edit(`${p}.placement_notes.${k}`, notes[k], { ph: "Placement note" })}</div>`)
         .join("") +
@@ -308,6 +309,47 @@
     initSerp();
   }
 
+  /* ---------------- 05 · distribution log ---------------- */
+
+  const DIST_COLS = [
+    { key: "asset", label: "Source Asset" },
+    { key: "channel", label: "Channel" },
+    { key: "format", label: "Format" },
+    { key: "notes", label: "Adaptation Notes" },
+    { key: "cadence", label: "Cadence" },
+  ];
+
+  function renderDistribution(campaign) {
+    const panel = $("#distribution-panel");
+    const rows = campaign && Array.isArray(campaign.distribution) ? campaign.distribution : null;
+    if (!rows || !rows.length) {
+      panel.innerHTML = emptyPanel(
+        "The distribution log lands here",
+        "Seven repurposing plays — every ad, email, and statement mapped to its second life across channels."
+      );
+      return;
+    }
+    panel.innerHTML =
+      `<div class="k-card dist-card reveal-item">` +
+      `<div class="table-scroll">` +
+      `<table class="dist-table">` +
+      `<thead><tr>${DIST_COLS.map((c) => `<th>${c.label}</th>`).join("")}</tr></thead>` +
+      `<tbody>` +
+      rows
+        .map(
+          (row, i) =>
+            `<tr>${DIST_COLS.map(
+              (c) =>
+                `<td class="dist-${c.key}">${edit(`distribution.${i}.${c.key}`, row[c.key], {
+                  ph: c.label,
+                  oneLine: c.key !== "notes",
+                })}</td>`
+            ).join("")}</tr>`
+        )
+        .join("") +
+      `</tbody></table></div></div>`;
+  }
+
   /* skeleton shells while the first-ever generation runs */
   function skeletonPanels() {
     const sk = (lines, tall) => {
@@ -321,12 +363,13 @@
     $("#panel-meta").innerHTML = `<div class="ad-grid">${sk(4, true) + sk(4, true) + sk(4, true)}</div>`;
     $("#panel-google").innerHTML = sk(9, false);
     $("#panel-tiktok").innerHTML = `<div class="tt-grid">${sk(6, true) + sk(6, true)}</div>`;
+    $("#distribution-panel").innerHTML = sk(8, false);
   }
 
   /* ---------------- populate ---------------- */
 
   function populateStatic(campaign) {
-    $$("#m01 .ai-field[data-field], #m03 .ai-field[data-field]").forEach((el) => {
+    $$("#m01 .ai-field[data-field], #m03 .ai-field[data-field], #m04 .ai-field[data-field]").forEach((el) => {
       const value = getByPath(campaign, el.dataset.field);
       el.textContent = value != null ? String(value) : "";
     });
@@ -341,9 +384,12 @@
       ((pa.tiktok || []).length) +
       (((pa.google || {}).descriptions || []).length);
     const emails = (c.emails || []).length;
+    const dist = (c.distribution || []).length;
     const kpis = kpiSetCount();
     $("#asset-count").textContent =
-      `${ads} ad assets · ${emails} emails ready` + (kpis ? ` · ${kpis}/${KPI_KEYS.length} KPIs set` : "");
+      `${ads} ad assets · ${emails} emails` +
+      (dist ? ` · ${dist}-row distribution log` : "") +
+      (kpis ? ` · ${kpis}/${KPI_KEYS.length} KPIs set` : "");
   }
 
   /* ---------------- 04 · KPI targets (manual — never AI-written) ---------------- */
@@ -408,6 +454,7 @@
     populateStatic(campaign);
     populateKpis(campaign);
     renderPlatformAds(campaign);
+    renderDistribution(campaign);
     document.body.classList.add("has-campaign");
     setStale(false);
     updateAssetCount();
@@ -439,11 +486,15 @@
   /* ---------------- generation ---------------- */
 
   const GEN_PHASES = [
+    "Mapping the audience…",
     "Profiling the persona…",
+    "Finding the strategic insight…",
     "Writing Meta variants…",
     "Building the Google RSA…",
     "Scripting TikTok hooks…",
     "Sequencing emails…",
+    "Suggesting KPI targets…",
+    "Writing the distribution log…",
     "Polishing every line…",
   ];
 
@@ -494,7 +545,10 @@
     } else {
       label.textContent = "Generate campaign";
       applyEngineHint();
-      if (!state.hasCampaign) renderPlatformAds(null);
+      if (!state.hasCampaign) {
+        renderPlatformAds(null);
+        renderDistribution(null);
+      }
     }
   }
 
@@ -676,6 +730,8 @@
 
     if (kind === "positioning") return String(c.positioning || "").trim();
 
+    if (kind === "insight") return String(c.strategic_insight || "").trim();
+
     if (kind === "meta") {
       const ad = (pa.meta || [])[i];
       if (!ad) return "";
@@ -762,6 +818,200 @@
     toast("Copied to clipboard");
   });
 
+  /* ---------------- markdown export ---------------- */
+
+  /* table-cell safe: escape pipes, collapse newlines */
+  function mdCell(v) {
+    return String(v == null ? "" : v).trim().replace(/\|/g, "\\|").replace(/\s*\n+\s*/g, " ");
+  }
+
+  function mdLine(v) {
+    return String(v == null ? "" : v).trim().replace(/\s*\n+\s*/g, " ");
+  }
+
+  const KPI_LABELS = {
+    reach: "Launch Reach",
+    ctr: "CTR",
+    cac: "CAC",
+    open_rate: "Email Open Rate",
+    conv_rate: "Conversion Rate",
+    roas: "ROAS",
+  };
+
+  const AUD_LAYERS = [
+    ["Primary Segment", "persona.primary_segment"],
+    ["Secondary Segment", "persona.secondary"],
+    ["Psychographic Driver", "persona.psychographic_driver"],
+    ["Watering Holes", "persona.watering_holes"],
+    ["Trigger Moment", "persona.trigger_moment"],
+    ["Pain Point", "persona.pain_point"],
+    ["Current Alternative", "persona.alternative"],
+    ["Core Desire", "persona.core_desire"],
+    ["Platform Habits", "persona.platforms"],
+  ];
+
+  const EMAIL_TIMING = ["Send: Day 0 (launch day)", "Send: +2 days", "Send: final 48 hours"];
+
+  function cap(s) {
+    const t = String(s || "");
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
+  function buildMarkdown() {
+    const c = state.campaign;
+    if (!c) return "";
+    const b = state.brief || {};
+    const pa = c.platform_ads || {};
+    const per = c.persona || {};
+    const L = [];
+
+    L.push(`# 🚀 Omnichannel Campaign Workspace — ${mdLine(b.name) || "Untitled"}`);
+    L.push(`### Brand Launch | ${mdLine(b.category) || "—"} | v1.0`);
+    L.push("");
+    L.push(`> **Strategic insight:** ${mdLine(c.strategic_insight)}`);
+    L.push("");
+
+    L.push("## ⚙️ Master Input Panel");
+    L.push("");
+    L.push("| Token | Resolved Value |");
+    L.push("|---|---|");
+    [
+      ["PRODUCT_NAME", b.name],
+      ["CATEGORY", b.category],
+      ["PRICE_POINT", b.price],
+      ["PAIN_POINT", b.problem],
+      ["DIFFERENTIATOR", b.mechanism],
+      ["LAUNCH_OFFER", b.offer],
+      ["BRAND_VOICE", b.tone],
+      ["COMPETITOR", b.competitor],
+    ].forEach(([token, value]) => L.push(`| ${token} | ${mdCell(value)} |`));
+    L.push("");
+
+    L.push("## 📋 Module 1: Executive Campaign Summary");
+    L.push("");
+    L.push("### 1.1 Target Audience Definition");
+    L.push("");
+    L.push(`*Persona shorthand: ${mdLine(per.name)} · ${mdLine(per.age_range)} · ${mdLine(per.location)}*`);
+    L.push("");
+    L.push("| Layer | Specification |");
+    L.push("|---|---|");
+    AUD_LAYERS.forEach(([label, path]) => L.push(`| **${label}** | ${mdCell(getByPath(c, path))} |`));
+    L.push("");
+    L.push("### 1.2 Core Positioning Statement");
+    L.push("");
+    L.push(`> ${mdLine(c.positioning)}`);
+    L.push("");
+    L.push("### 1.3 Primary KPIs");
+    L.push("");
+    L.push("| KPI | Target | Window |");
+    L.push("|---|---|---|");
+    const kpis = c.kpis || {};
+    KPI_KEYS.forEach((key) => {
+      const row = kpis[key] || {};
+      L.push(`| ${KPI_LABELS[key]} | ${mdCell(row.target)} | ${mdCell(row.window)} |`);
+    });
+    L.push("");
+    L.push(`> **Unit economics note:** ${mdLine(c.kpi_note)}`);
+    L.push("");
+
+    L.push("## 🎯 Module 2: Direct-Response Ad Matrix (Meta)");
+    L.push("");
+    (pa.meta || []).forEach((ad, i) => {
+      const notes = ad.placement_notes || {};
+      L.push(`### Variant ${"ABC"[i] || i + 1} — ${cap(ad.angle)}`);
+      L.push("");
+      L.push("| Field | Copy |");
+      L.push("|---|---|");
+      L.push(`| Primary Text | ${mdCell(ad.primary_text)} |`);
+      L.push(`| Headline | ${mdCell(ad.headline)} |`);
+      L.push(`| Description | ${mdCell(ad.description)} |`);
+      L.push(`| CTA Button | ${mdCell(ad.cta_button)} |`);
+      L.push(`| Targeting | ${mdCell(ad.targeting)} |`);
+      L.push("");
+      L.push("**Placement notes**");
+      L.push(`- **Feed:** ${mdLine(notes.feed)}`);
+      L.push(`- **Reels:** ${mdLine(notes.reels)}`);
+      L.push(`- **Stories:** ${mdLine(notes.stories)}`);
+      L.push("");
+    });
+
+    const g = pa.google || {};
+    L.push("## 🎯 Module 2b: Google Responsive Search Ad");
+    L.push("");
+    L.push("**Headlines (10 × ≤30ch)**");
+    L.push("");
+    (g.headlines || []).forEach((h, i) => L.push(`${i + 1}. ${mdLine(h)}`));
+    L.push("");
+    L.push("**Descriptions (4 × ≤90ch)**");
+    L.push("");
+    (g.descriptions || []).forEach((d, i) => L.push(`${i + 1}. ${mdLine(d)}`));
+    L.push("");
+    L.push(`**Display path:** \`/${mdLine(g.path1)}/${mdLine(g.path2)}\``);
+    L.push(`**CTA:** ${mdLine(g.cta)}`);
+    L.push("");
+
+    L.push("## 🎯 Module 2c: TikTok Scripts");
+    L.push("");
+    (pa.tiktok || []).forEach((ad, i) => {
+      L.push(`### Script ${i + 1} — ${cap(ad.angle)} (${mdLine(ad.format) || "video"})`);
+      L.push("");
+      L.push(`**Hook:** ${mdLine(ad.hook)}`);
+      L.push("");
+      L.push("**Script beats**");
+      L.push("");
+      (ad.script_beats || []).forEach((beat, n) => L.push(`${n + 1}. ${mdLine(beat)}`));
+      L.push("");
+      L.push(`**Caption:** ${mdLine(ad.caption)}`);
+      L.push(`**Hashtags:** ${(ad.hashtags || []).map(mdLine).join(" ")}`);
+      L.push(`**Sound direction:** ${mdLine(ad.sound_direction)}`);
+      L.push(`**CTA:** ${mdLine(ad.cta)}`);
+      L.push("");
+    });
+
+    L.push("## ✉️ Module 3: Lifecycle Email Blueprint");
+    L.push("");
+    (c.emails || []).forEach((em, i) => {
+      L.push(`### Email ${i + 1} — ${EMAIL_TIMING[i] || ""}`);
+      L.push("");
+      L.push("| Field | Copy |");
+      L.push("|---|---|");
+      L.push(`| Subject Line A | ${mdCell(em.subject)} |`);
+      L.push(`| Subject Line B | ${mdCell(em.subject_alt)} |`);
+      L.push(`| Preview Text | ${mdCell(em.preview)} |`);
+      L.push(`| Goal | ${mdCell(em.goal)} |`);
+      L.push(`| Body | ${mdCell(em.body)} |`);
+      L.push(`| CTA | ${mdCell(em.cta)} |`);
+      L.push("");
+    });
+
+    L.push("## 📡 Module 4: Content Distribution Log");
+    L.push("");
+    L.push("| # | Source Asset | Channel | Format | Adaptation Notes | Cadence |");
+    L.push("|---|---|---|---|---|---|");
+    (c.distribution || []).forEach((row, i) => {
+      L.push(
+        `| ${i + 1} | ${mdCell(row.asset)} | ${mdCell(row.channel)} | ${mdCell(row.format)} | ${mdCell(row.notes)} | ${mdCell(row.cadence)} |`
+      );
+    });
+    L.push("");
+
+    return L.join("\n");
+  }
+
+  $("#export-md").addEventListener("click", async () => {
+    if (!state.campaign) {
+      toast("Nothing to export yet — generate a campaign first", "warn");
+      return;
+    }
+    const md = buildMarkdown();
+    const ok = await copyText(md);
+    if (!ok) {
+      showError("Could not copy to the clipboard in this browser.");
+      return;
+    }
+    toast("Campaign workspace copied as Markdown");
+  });
+
   /* ---------------- tabs ---------------- */
 
   const TAB_KEYS = ["meta", "google", "tiktok"];
@@ -815,6 +1065,7 @@
 
   async function init() {
     renderPlatformAds(null);
+    renderDistribution(null);
     selectTab("meta");
 
     try {

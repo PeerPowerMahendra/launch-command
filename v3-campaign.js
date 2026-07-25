@@ -25,12 +25,34 @@ const V3_CAMPAIGN_SCHEMA = {
         alternative: { type: "string" },
         core_desire: { type: "string" },
         platforms: { type: "string" },
+        primary_segment: { type: "string" },
         secondary: { type: "string" },
+        psychographic_driver: { type: "string" },
+        watering_holes: { type: "string" },
+        trigger_moment: { type: "string" },
       },
-      required: ["name", "age_range", "location", "pain_point", "alternative", "core_desire", "platforms", "secondary"],
+      required: [
+        "name", "age_range", "location", "pain_point", "alternative", "core_desire", "platforms",
+        "primary_segment", "secondary", "psychographic_driver", "watering_holes", "trigger_moment",
+      ],
       additionalProperties: false,
     },
+    strategic_insight: { type: "string" },
     positioning: { type: "string" },
+    kpis: {
+      type: "object",
+      properties: {
+        reach:     { type: "object", properties: { target: { type: "string" }, window: { type: "string" } }, required: ["target", "window"], additionalProperties: false },
+        ctr:       { type: "object", properties: { target: { type: "string" }, window: { type: "string" } }, required: ["target", "window"], additionalProperties: false },
+        cac:       { type: "object", properties: { target: { type: "string" }, window: { type: "string" } }, required: ["target", "window"], additionalProperties: false },
+        open_rate: { type: "object", properties: { target: { type: "string" }, window: { type: "string" } }, required: ["target", "window"], additionalProperties: false },
+        conv_rate: { type: "object", properties: { target: { type: "string" }, window: { type: "string" } }, required: ["target", "window"], additionalProperties: false },
+        roas:      { type: "object", properties: { target: { type: "string" }, window: { type: "string" } }, required: ["target", "window"], additionalProperties: false },
+      },
+      required: ["reach", "ctr", "cac", "open_rate", "conv_rate", "roas"],
+      additionalProperties: false,
+    },
+    kpi_note: { type: "string" },
     platform_ads: {
       type: "object",
       properties: {
@@ -44,6 +66,7 @@ const V3_CAMPAIGN_SCHEMA = {
               headline: { type: "string" },
               description: { type: "string" },
               cta_button: { type: "string", enum: ["Shop Now", "Learn More", "Sign Up", "Get Offer", "Subscribe", "Order Now"] },
+              targeting: { type: "string" },
               placement_notes: {
                 type: "object",
                 properties: {
@@ -55,7 +78,7 @@ const V3_CAMPAIGN_SCHEMA = {
                 additionalProperties: false,
               },
             },
-            required: ["angle", "primary_text", "headline", "description", "cta_button", "placement_notes"],
+            required: ["angle", "primary_text", "headline", "description", "cta_button", "targeting", "placement_notes"],
             additionalProperties: false,
           },
         },
@@ -99,17 +122,33 @@ const V3_CAMPAIGN_SCHEMA = {
         type: "object",
         properties: {
           subject: { type: "string" },
+          subject_alt: { type: "string" },
           preview: { type: "string" },
           goal: { type: "string" },
           body: { type: "string" },
           cta: { type: "string" },
         },
-        required: ["subject", "preview", "goal", "body", "cta"],
+        required: ["subject", "subject_alt", "preview", "goal", "body", "cta"],
+        additionalProperties: false,
+      },
+    },
+    distribution: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          asset: { type: "string" },
+          channel: { type: "string" },
+          format: { type: "string" },
+          notes: { type: "string" },
+          cadence: { type: "string" },
+        },
+        required: ["asset", "channel", "format", "notes", "cadence"],
         additionalProperties: false,
       },
     },
   },
-  required: ["persona", "positioning", "platform_ads", "emails"],
+  required: ["persona", "strategic_insight", "positioning", "kpis", "kpi_note", "platform_ads", "emails", "distribution"],
   additionalProperties: false,
 };
 
@@ -120,8 +159,24 @@ const V3_CAMPAIGN_SCHEMA = {
 function buildBriefV3(b) {
   return `${briefCore(b)}
 
+AUDIENCE INTELLIGENCE (persona — this is the module that must impress a strategist)
+- primary_segment: 2-3 sentences naming EXACTLY who — demographics plus life situation. Specific, never generic ("adults who like convenience" is a failure).
+- secondary: the secondary segment worth a smaller bet, 1-2 sentences.
+- psychographic_driver: what they believe, written as an inner-monologue quote in their own words — the sentence they'd say to a friend about this problem.
+- watering_holes: named, specific places they gather — actual subreddits, Facebook/WhatsApp group types, TikTok/Instagram niches, newsletters, Discord servers, physical spots. Comma-separated list.
+- trigger_moment: the specific, concrete moment when they realize they need this product.
+
+STRATEGIC INSIGHT
+- strategic_insight: the single non-obvious cultural or behavioral tension that powers the entire campaign — the creative engine every asset draws from. 2-3 sentences. It must be an insight (a surprising truth about the audience's relationship to this category), never a restated benefit.
+
+POSITIONING FRAMEWORK
+- positioning must follow this exact structure: "For [audience] who [pain], [product name] is the [category] that [key benefit]. Unlike [competitor/status quo], we [differentiator]. Proven by [proof point]."
+
+KPI SUGGESTIONS (kpis + kpi_note)
+- Suggest realistic launch-window targets grounded in the price point and category: reach (impressions), ctr (%), cac ($), open_rate (%), conv_rate (%), roas (×). Each target is a short value string ("50k", "1.8%", "$12", "3.1×"); each window is short ("first 14 days", "rolling 7 days", "per send").
+- kpi_note: 2-3 sentences of unit-economics reasoning — price point → rough margin → CAC ceiling → the one metric that decides whether this launch works.
+
 CAMPAIGN RULES
-- positioning is a single crisp positioning statement contrasting against the competitor/status quo.
 - Match the requested brand tone in every piece of copy, on every platform.
 
 META ADS (platform_ads.meta — exactly 3 items)
@@ -130,6 +185,7 @@ META ADS (platform_ads.meta — exactly 3 items)
 - meta[2] angle "offer": conversion closer built on the launch offer.
 - Char limits: primary_text ≤ 125 chars, headline ≤ 40 chars, description ≤ 30 chars.
 - cta_button must be the single best fit from the allowed values.
+- targeting: one line naming the audience stack for that angle — interests/communities for hook (cold), engagement retargeting for story (warm), cart/site retargeting + list for offer (hot).
 - placement_notes: one tight sentence each on how the creative adapts to feed (1:1), reels (9:16 video), stories (9:16 tap-through).
 
 GOOGLE RESPONSIVE SEARCH AD (platform_ads.google — ONE asset group)
@@ -150,7 +206,14 @@ EMAILS (emails — exactly 3 items)
 - emails[0]: launch Announcement.
 - emails[1]: Benefit Deep-Dive — explains the signature mechanism and handles one likely objection.
 - emails[2]: Urgency/Scarcity — uses the deadline/launch offer.
-- Limits: subject under 9 words, body under 26 words.`;
+- subject and subject_alt: two genuinely different A/B test approaches (e.g. curiosity vs direct benefit), never rewordings of each other.
+- Limits: subjects under 9 words each, body under 26 words.
+
+DISTRIBUTION LOG (distribution — exactly 7 items)
+- Repurpose the launch assets natively across, in order: short vertical video (Reels/TikTok), carousel (IG feed/LinkedIn), thread (X/LinkedIn), story/status (IG Stories/WhatsApp), long-form recap (YouTube/blog), quote graphic (Pinterest), community post (relevant group/forum from watering_holes).
+- asset: which source asset it repurposes (e.g. "Meta hook ad", "Email 2 mechanism section", "Positioning statement").
+- notes: one sentence of adaptation advice that is native to the channel AND specific to THIS product and audience — never generic ("post consistently" is a failure).
+- cadence: short scheduling note ("Day 1", "3x launch week", "final 48 hours").`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -165,6 +228,7 @@ const ARRAY_COUNTS = {
   "platform_ads.tiktok[].script_beats": 4,
   "platform_ads.tiktok[].hashtags": 5,
   "emails": 3,
+  "distribution": 7,
 };
 
 function skeletonFromSchema(schema, counts = ARRAY_COUNTS, path = "") {
@@ -245,6 +309,20 @@ function normalizeV3(campaign) {
   g.descriptions = g.descriptions.slice(0, 4).map((d) => truncateAtWord(d, 90));
   g.path1 = slugifyPath(g.path1);
   g.path2 = slugifyPath(g.path2);
+
+  // Strategy fields — lenient: fill gaps rather than fail (matters for the CLI path)
+  campaign.strategic_insight = campaign.strategic_insight || "";
+  campaign.kpi_note = campaign.kpi_note || "";
+  const kpiKeys = ["reach", "ctr", "cac", "open_rate", "conv_rate", "roas"];
+  campaign.kpis = campaign.kpis && typeof campaign.kpis === "object" ? campaign.kpis : {};
+  for (const key of kpiKeys) {
+    const k = campaign.kpis[key];
+    campaign.kpis[key] = {
+      target: (k && k.target) || "",
+      window: (k && k.window) || "",
+    };
+  }
+  campaign.distribution = Array.isArray(campaign.distribution) ? campaign.distribution.slice(0, 7) : [];
 
   return campaign;
 }

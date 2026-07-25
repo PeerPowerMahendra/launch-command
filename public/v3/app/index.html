@@ -31,10 +31,11 @@
 
     <nav class="rail-nav" aria-label="Workspace modules">
       <a class="rail-link" href="#m00"><span class="rail-num">00</span>Brief</a>
-      <a class="rail-link" href="#m01"><span class="rail-num">01</span>Persona &amp; Positioning</a>
+      <a class="rail-link" href="#m01"><span class="rail-num">01</span>Audience Intelligence</a>
       <a class="rail-link" href="#m02"><span class="rail-num">02</span>Platform Ads</a>
       <a class="rail-link" href="#m03"><span class="rail-num">03</span>Email Sequence</a>
       <a class="rail-link" href="#m04"><span class="rail-num">04</span>KPI Targets</a>
+      <a class="rail-link" href="#m05"><span class="rail-num">05</span>Distribution</a>
       <span class="rail-sep" aria-hidden="true"></span>
       <a class="rail-link rail-link-ext" href="/v3/launch/">Launch console →</a>
       <a class="rail-link rail-link-ext" href="/v3/">Landing</a>
@@ -153,37 +154,54 @@
       <button id="demo-dismiss" class="k-btn-ghost mini-btn" type="button">Dismiss</button>
     </div>
 
-    <!-- ======== 01 · PERSONA & POSITIONING ======== -->
+    <!-- ======== 01 · AUDIENCE INTELLIGENCE & POSITIONING ======== -->
     <section id="m01" class="module ai-module">
       <div class="module-head">
         <span class="module-num">01</span>
-        <h2>Persona &amp; Positioning</h2>
+        <h2>Audience Intelligence &amp; Positioning</h2>
         <span class="k-chip warn stale-badge">Stale — regeneration failed</span>
       </div>
-      <p class="module-desc">Who we are talking to and the one sentence the brand says against the status quo. Click any line to revise it.</p>
+      <p class="module-desc">Who we are talking to, the insight that powers the campaign, and the one sentence the brand says against the status quo. Click any line to revise it.</p>
+
+      <article class="k-card insight-card reveal-item">
+        <div class="card-head">
+          <span class="k-chip accent">Strategic insight</span>
+          <span class="k-label insight-note">The creative engine — every asset draws from this</span>
+          <button class="copy-btn" type="button" data-copy="insight" aria-label="Copy strategic insight">Copy</button>
+        </div>
+        <div class="insight-text ai-field" contenteditable="true" spellcheck="false" data-field="strategic_insight" data-placeholder="The strategic insight — the tension every asset leans on — will appear here after generation."></div>
+      </article>
 
       <div class="duo-grid">
         <article class="k-card persona-card reveal-item">
           <div class="card-head">
-            <span class="k-chip accent">Target persona</span>
+            <span class="k-chip accent">Target Audience Definition</span>
           </div>
-          <div class="persona-ident">
-            <span class="ai-field one-line persona-name" contenteditable="true" spellcheck="false" data-field="persona.name" data-placeholder="Persona name"></span>
-            <span class="persona-meta">
-              <span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="persona.age_range" data-placeholder="Age range"></span>
-              <span class="dot-sep" aria-hidden="true">·</span>
-              <span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="persona.location" data-placeholder="Location"></span>
-            </span>
+          <div class="persona-shorthand">
+            <span class="k-label">Persona shorthand</span>
+            <span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="persona.name" data-placeholder="Name"></span>
+            <span class="dot-sep" aria-hidden="true">·</span>
+            <span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="persona.age_range" data-placeholder="Age range"></span>
+            <span class="dot-sep" aria-hidden="true">·</span>
+            <span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="persona.location" data-placeholder="Location"></span>
           </div>
-          <div class="persona-rows">
-            <div class="p-row"><span class="k-label">Pain point</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.pain_point" data-placeholder="Awaiting generation"></span></div>
-            <div class="p-row"><span class="k-label">Current alternative</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.alternative" data-placeholder="Awaiting generation"></span></div>
-            <div class="p-row"><span class="k-label">Core desire</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.core_desire" data-placeholder="Awaiting generation"></span></div>
-            <div class="p-row"><span class="k-label">Platform habits</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.platforms" data-placeholder="Awaiting generation"></span></div>
-          </div>
-          <div class="persona-secondary">
-            <span class="k-label">Secondary audience</span>
-            <span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.secondary" data-placeholder="Awaiting generation"></span>
+          <div class="table-scroll">
+            <table class="aud-table">
+              <thead>
+                <tr><th>Layer</th><th>Specification</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="aud-layer">Primary Segment</td><td><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.primary_segment" data-placeholder="Awaiting generation"></span></td></tr>
+                <tr><td class="aud-layer">Secondary Segment</td><td><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.secondary" data-placeholder="Awaiting generation"></span></td></tr>
+                <tr><td class="aud-layer">Psychographic Driver</td><td><span class="ai-field aud-quote" contenteditable="true" spellcheck="false" data-field="persona.psychographic_driver" data-placeholder="Their inner monologue, in their own words"></span></td></tr>
+                <tr><td class="aud-layer">Watering Holes</td><td><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.watering_holes" data-placeholder="Named communities and places they gather"></span></td></tr>
+                <tr><td class="aud-layer">Trigger Moment</td><td><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.trigger_moment" data-placeholder="Awaiting generation"></span></td></tr>
+                <tr><td class="aud-layer">Pain Point</td><td><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.pain_point" data-placeholder="Awaiting generation"></span></td></tr>
+                <tr><td class="aud-layer">Current Alternative</td><td><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.alternative" data-placeholder="Awaiting generation"></span></td></tr>
+                <tr><td class="aud-layer">Core Desire</td><td><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.core_desire" data-placeholder="Awaiting generation"></span></td></tr>
+                <tr><td class="aud-layer">Platform Habits</td><td><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.platforms" data-placeholder="Awaiting generation"></span></td></tr>
+              </tbody>
+            </table>
           </div>
         </article>
 
@@ -243,6 +261,7 @@
               <button class="copy-btn" type="button" data-copy="email:0" aria-label="Copy email 1">Copy</button>
             </div>
             <div class="email-subject ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.0.subject" data-placeholder="Subject line"></div>
+            <div class="email-row alt-subject-row"><span class="k-label">Alt subject A/B</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.0.subject_alt" data-placeholder="A/B alternative subject"></span></div>
             <div class="email-row"><span class="k-label">Preview</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.0.preview" data-placeholder="Awaiting generation"></span></div>
             <div class="email-row"><span class="k-label">Goal</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.0.goal" data-placeholder="Awaiting generation"></span></div>
             <div class="email-row"><span class="k-label">Body</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.0.body" data-placeholder="Awaiting generation"></span></div>
@@ -259,6 +278,7 @@
               <button class="copy-btn" type="button" data-copy="email:1" aria-label="Copy email 2">Copy</button>
             </div>
             <div class="email-subject ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.1.subject" data-placeholder="Subject line"></div>
+            <div class="email-row alt-subject-row"><span class="k-label">Alt subject A/B</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.1.subject_alt" data-placeholder="A/B alternative subject"></span></div>
             <div class="email-row"><span class="k-label">Preview</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.1.preview" data-placeholder="Awaiting generation"></span></div>
             <div class="email-row"><span class="k-label">Goal</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.1.goal" data-placeholder="Awaiting generation"></span></div>
             <div class="email-row"><span class="k-label">Body</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.1.body" data-placeholder="Awaiting generation"></span></div>
@@ -275,6 +295,7 @@
               <button class="copy-btn" type="button" data-copy="email:2" aria-label="Copy email 3">Copy</button>
             </div>
             <div class="email-subject ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.2.subject" data-placeholder="Subject line"></div>
+            <div class="email-row alt-subject-row"><span class="k-label">Alt subject A/B</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.2.subject_alt" data-placeholder="A/B alternative subject"></span></div>
             <div class="email-row"><span class="k-label">Preview</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.2.preview" data-placeholder="Awaiting generation"></span></div>
             <div class="email-row"><span class="k-label">Goal</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.2.goal" data-placeholder="Awaiting generation"></span></div>
             <div class="email-row"><span class="k-label">Body</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.2.body" data-placeholder="Awaiting generation"></span></div>
@@ -284,16 +305,17 @@
       </div>
     </section>
 
-    <!-- ======== 04 · KPI TARGETS (manual — the AI never writes this) ======== -->
-    <section id="m04" class="module">
+    <!-- ======== 04 · KPI TARGETS (AI-suggested, user edits always win) ======== -->
+    <section id="m04" class="module ai-module">
       <div class="module-head">
         <span class="module-num">04</span>
         <h2>KPI Targets</h2>
-        <span class="k-chip warn">Manual entry</span>
+        <span class="k-chip accent">AI-suggested</span>
+        <span class="k-chip warn stale-badge">Stale — regeneration failed</span>
       </div>
-      <p class="module-desc">Business targets, not creative — the launch console compares these against live results.</p>
+      <p class="module-desc">AI-suggested from your price point — override any target; your numbers win. The launch console compares these against live results.</p>
 
-      <div class="k-card kpi-card">
+      <div class="k-card kpi-card reveal-item">
         <div class="table-scroll">
           <table class="kpi-table">
             <thead>
@@ -333,7 +355,23 @@
             </tbody>
           </table>
         </div>
+        <div class="kpi-note">
+          <span class="k-label">Unit economics</span>
+          <span class="ai-field" contenteditable="true" spellcheck="false" data-field="kpi_note" data-placeholder="The reasoning behind these targets will appear here after generation."></span>
+        </div>
       </div>
+    </section>
+
+    <!-- ======== 05 · DISTRIBUTION LOG ======== -->
+    <section id="m05" class="module ai-module">
+      <div class="module-head">
+        <span class="module-num">05</span>
+        <h2>Distribution Log</h2>
+        <span class="k-chip warn stale-badge">Stale — regeneration failed</span>
+      </div>
+      <p class="module-desc">Every asset gets a second life. Where each piece goes next, in what format, and how often — edit any cell.</p>
+
+      <div id="distribution-panel"></div>
     </section>
 
     <footer class="page-foot">Launch Command v3 · generated copy is a first draft — edit everything.</footer>
@@ -345,7 +383,10 @@
       <span id="asset-count" class="k-label asset-count">—</span>
       <span id="save-pip" class="k-label save-pip">Saved ✓</span>
     </div>
-    <a class="k-btn action-cta" href="/v3/launch/">Open Launch Console →</a>
+    <div class="action-right">
+      <button id="export-md" class="k-btn-ghost export-btn" type="button">Export Markdown</button>
+      <a class="k-btn action-cta" href="/v3/launch/">Open Launch Console →</a>
+    </div>
   </div>
 
   <script src="/api-base.js"></script>

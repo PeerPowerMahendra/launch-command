@@ -137,7 +137,6 @@ body { overflow-x: hidden; }
 .char-count.over { color: var(--warn); font-weight: 600; }
 
 /* inline editables that must not become block boxes */
-.persona-meta .ai-field,
 .mp-cta .ai-field,
 .cta-pill,
 .tt-tag { display: inline-block; min-width: 36px; }
@@ -299,6 +298,85 @@ body { overflow-x: hidden; }
 
 @media (max-width: 640px) { .demo-notice { flex-wrap: wrap; } }
 
+/* ---------------- 01 · audience intelligence ---------------- */
+
+/* strategic insight — the most prominent card in the module */
+.insight-card {
+  margin-bottom: 20px;
+  border-color: rgba(91, 124, 255, 0.42);
+  background:
+    linear-gradient(135deg, rgba(91, 124, 255, 0.09), rgba(139, 92, 246, 0.05) 60%),
+    var(--panel);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 44px rgba(91, 124, 255, 0.10);
+}
+
+.insight-note { letter-spacing: 0.12em; }
+
+.insight-text {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--text-hi);
+  min-height: 2.4em;
+}
+
+/* persona shorthand caption — secondary, above the definition table */
+.persona-shorthand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--text-mid);
+  margin-bottom: 12px;
+}
+
+.persona-shorthand .k-label { margin-right: 6px; }
+.persona-shorthand .ai-field { display: inline-block; min-width: 30px; }
+
+/* two-column audience definition table: Layer | Specification */
+.aud-table { width: 100%; border-collapse: collapse; }
+
+.aud-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-low);
+  padding: 12px 12px 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.aud-table td {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.6;
+  vertical-align: top;
+}
+
+.aud-table tr:last-child td { border-bottom: none; }
+
+td.aud-layer {
+  width: 148px;
+  padding-right: 16px;
+  padding-top: 17px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-low);
+}
+
+.aud-quote { font-style: italic; }
+.aud-quote:not(:empty)::before { content: "\201C"; color: var(--text-low); }
+.aud-quote:not(:empty)::after { content: "\201D"; color: var(--text-low); }
+
 /* ---------------- 01 · persona & positioning ---------------- */
 
 .duo-grid {
@@ -310,53 +388,13 @@ body { overflow-x: hidden; }
 
 @media (max-width: 1024px) { .duo-grid { grid-template-columns: 1fr; } }
 
-.persona-ident { margin-bottom: 18px; }
-
-.persona-name {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 22px;
-  color: var(--text-hi);
-}
-
-.persona-meta {
-  display: block;
-  margin-top: 4px;
-  font-size: 13.5px;
-  color: var(--text-mid);
-}
-
-.dot-sep { color: var(--text-low); padding: 0 4px; }
-
-.persona-rows { display: flex; flex-direction: column; }
-
-.p-row {
-  display: grid;
-  grid-template-columns: 118px minmax(0, 1fr);
-  gap: 12px;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
-  font-size: 14px;
-}
-
-.p-row .k-label { padding-top: 3px; }
-
-.persona-secondary {
-  margin-top: 14px;
-  padding: 12px 14px;
-  background: var(--bg-1);
-  border: 1px dashed var(--line);
-  border-radius: 10px;
-  font-size: 13.5px;
-}
-
-.persona-secondary .k-label { display: block; margin-bottom: 5px; }
+.dot-sep { color: var(--text-low); padding: 0 2px; }
 
 .positioning-card { border-left: 3px solid var(--accent); }
 
 .positioning-quote {
-  font-size: 21px;
-  line-height: 1.55;
+  font-size: 19px;
+  line-height: 1.65;
   font-style: italic;
   font-weight: 500;
   color: var(--text-hi);
@@ -591,6 +629,13 @@ body { overflow-x: hidden; }
 
 .pn-row .k-label { padding-top: 2px; }
 .pn-row .ai-field { color: var(--text-mid); }
+
+.targeting-row .k-label { color: var(--p-meta); }
+.targeting-row .ai-field {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+}
 
 /* ---------------- 02 · google RSA ---------------- */
 
@@ -898,6 +943,9 @@ body { overflow-x: hidden; }
 
 .email-row .k-label { padding-top: 3px; }
 
+.alt-subject-row { border-top: none; padding-top: 0; margin-top: -4px; }
+.alt-subject-row .ai-field { color: var(--text-mid); font-size: 13.5px; }
+
 .cta-pill {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -982,6 +1030,84 @@ body { overflow-x: hidden; }
   border-bottom-color: transparent;
 }
 
+/* KPI chips shimmer during generation like ai-fields do */
+.loading .chip-input {
+  color: transparent !important;
+  border-radius: 6px;
+  background: linear-gradient(100deg, var(--bg-2) 40%, #1B2540 50%, var(--bg-2) 60%);
+  background-size: 200% 100%;
+  animation: k-shimmer 1.4s linear infinite;
+  pointer-events: none;
+  min-height: 1em;
+}
+
+.loading .chip-input:empty::before { color: transparent; }
+
+.kpi-note {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+  padding: 15px 12px 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.kpi-note .k-label { padding-top: 3px; }
+.kpi-note .ai-field { color: var(--text-mid); }
+
+@media (max-width: 640px) {
+  .kpi-note { grid-template-columns: 1fr; gap: 5px; }
+}
+
+/* ---------------- 05 · distribution log ---------------- */
+
+.dist-card { padding: 8px 24px 12px; }
+
+.dist-table { width: 100%; border-collapse: collapse; min-width: 860px; }
+
+.dist-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-low);
+  padding: 14px 12px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.dist-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  line-height: 1.55;
+  vertical-align: top;
+}
+
+.dist-table tr:last-child td { border-bottom: none; }
+
+.dist-table .ai-field { min-width: 60px; }
+
+.dist-asset { min-width: 150px; }
+.dist-asset .ai-field { color: var(--text-hi); font-weight: 500; }
+
+.dist-channel { min-width: 130px; }
+.dist-format { min-width: 120px; }
+
+.dist-notes { min-width: 260px; }
+.dist-notes .ai-field { color: var(--text-mid); }
+
+.dist-cadence { min-width: 100px; }
+.dist-cadence .ai-field {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #9DB2FF;
+}
+
 /* ---------------- bottom action bar ---------------- */
 
 .action-bar {
@@ -1009,6 +1135,10 @@ body.has-campaign .rail-main { padding-bottom: 150px; }
 body.has-campaign .toast-stack { bottom: 86px; }
 
 .action-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+
+.action-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.export-btn { padding: 10px 16px; font-size: 13px; white-space: nowrap; }
 
 .asset-count { font-size: 10.5px; color: var(--text-mid); }
 
@@ -1041,13 +1171,19 @@ body.has-campaign .toast-stack { bottom: 86px; }
 
 @media (max-width: 640px) {
   .asset-count { display: none; }
-  .action-cta { flex: 1; }
+  /* full-width button row; extra bottom padding keeps the fixed V2/V3 pill
+     (bottom-right corner) out of the buttons' way */
+  .action-bar { padding: 10px 16px 46px; }
+  .action-left { display: none; }
+  .action-right { flex: 1; }
+  .action-cta { flex: 1; white-space: nowrap; }
+  .export-btn { padding: 10px 12px; font-size: 12px; }
   .gen-grid { grid-template-columns: 1fr; }
   .gen-card { padding: 20px; }
   .module-head h2 { font-size: 20px; }
-  .p-row { grid-template-columns: 1fr; gap: 4px; }
   .email-row { grid-template-columns: 1fr; gap: 4px; }
   .positioning-quote { font-size: 18px; }
   .mp-foot { flex-wrap: wrap; }
   .action-cta { padding: 10px 16px; font-size: 13px; }
+  td.aud-layer { width: 118px; padding-right: 10px; }
 }

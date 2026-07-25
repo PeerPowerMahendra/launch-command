@@ -86,8 +86,30 @@ function buildDemoCampaignV3(brief = {}) {
   const offer = (brief.offer || "").trim() || "the launch offer";
 
   return {
-    persona: base.persona,
+    persona: {
+      ...base.persona,
+      primary_segment:
+        "Adults 28–45 in urban and suburban metros who have already tried the cheap fixes for this problem and been burned. They research before buying, read reviews, and will pay more once for something that actually holds.",
+      psychographic_driver:
+        "\"I've wasted enough money on things that half-work. I'd rather pay once for the real fix than keep buying band-aids.\"",
+      watering_holes:
+        "Niche subreddits for the problem space, Facebook buy-it-for-life groups, Instagram review accounts, product-comparison YouTube channels, neighborhood WhatsApp groups",
+      trigger_moment:
+        "The moment the latest cheap fix fails again — usually late at night — and they open their phone to search \"best [category] that actually works\".",
+    },
+    strategic_insight:
+      "This audience doesn't distrust the product category — they distrust the promises around it. Every failed cheap fix has trained them to hear marketing as noise, so the campaign wins by sounding like the honest friend who already tried everything, not the brand that shouts loudest.",
     positioning: base.positioning,
+    kpis: {
+      reach:     { target: "40k",  window: "first 14 days" },
+      ctr:       { target: "1.4%", window: "rolling 7 days" },
+      cac:       { target: "$18",  window: "launch month" },
+      open_rate: { target: "38%",  window: "per send" },
+      conv_rate: { target: "2.8%", window: "rolling 7 days" },
+      roas:      { target: "2.5×", window: "first 14 days" },
+    },
+    kpi_note:
+      "At this price point, one sale must cover acquisition on the first order — so CAC is the ceiling that decides everything. Hold CAC under a third of order value and the launch funds itself; the metric that matters most after week one is repeat/referral rate, because this audience talks.",
     platform_ads: {
       meta: [
         {
@@ -96,6 +118,7 @@ function buildDemoCampaignV3(brief = {}) {
           headline: "Stop tolerating. Start fixing.",
           description: "The fix that holds.",
           cta_button: "Learn More",
+          targeting: "Cold: category interests + problem-adjacent communities + 1% lookalike of email list.",
           placement_notes: {
             feed: "Split-screen before/after in 1:1, problem on the left, calm after-state right.",
             reels: "Open on the frustration in the first second, hard cut to the product in use.",
@@ -108,6 +131,7 @@ function buildDemoCampaignV3(brief = {}) {
           headline: "It finally just worked",
           description: "From a skeptic like you.",
           cta_button: "Learn More",
+          targeting: "Warm: video viewers 50%+, IG engagers, site visitors 30 days.",
           placement_notes: {
             feed: "UGC-style testimonial frame with the quote as large type over natural photo.",
             reels: "Customer speaks straight to camera, captions on, no music bed.",
@@ -120,6 +144,7 @@ function buildDemoCampaignV3(brief = {}) {
           headline: "The launch offer ends soon",
           description: "Claim it before it's gone.",
           cta_button: "Get Offer",
+          targeting: "Hot: cart abandoners + email list + engagers who haven't purchased.",
           placement_notes: {
             feed: "Product hero shot with bold offer badge and end-date in the corner.",
             reels: "Countdown-style cut every second, offer terms as animated overlay text.",
@@ -198,7 +223,23 @@ function buildDemoCampaignV3(brief = {}) {
         },
       ],
     },
-    emails: base.emails,
+    emails: base.emails.map((e, i) => ({
+      ...e,
+      subject_alt: [
+        "The wait is over — see what's new",
+        "One question everyone asks us",
+        "This disappears at midnight",
+      ][i],
+    })),
+    distribution: [
+      { asset: "Meta hook ad", channel: "Reels / TikTok", format: "Short vertical video", notes: "Open on the frustration in the first second, product reveal at second three — no logo until the end card.", cadence: "3x launch week" },
+      { asset: "Meta story ad", channel: "IG feed / LinkedIn", format: "Carousel", notes: "Split the customer story into 5 frames; the skeptic-to-believer turn lands on frame 4, CTA on 5.", cadence: "Day 2" },
+      { asset: "Email 2 mechanism section", channel: "X / LinkedIn", format: "Thread", notes: "Six posts: pain, failed fixes, the mechanism, proof, honest caveat, offer — one idea per post.", cadence: "Day 3" },
+      { asset: "Offer ad", channel: "IG Stories / WhatsApp Status", format: "Story / status", notes: "Countdown sticker over the offer card; single tap-through — no extra frames.", cadence: "Final 48 hours" },
+      { asset: "Email 2 deep-dive", channel: "YouTube / blog", format: "Long-form recap", notes: "Expand the mechanism into an honest explainer; answer the top objection in the first minute.", cadence: "Launch week" },
+      { asset: "Positioning statement", channel: "Pinterest", format: "Quote graphic", notes: "Set the one-line positioning in brand type on a clean background — link to the story page, not checkout.", cadence: "Day 4" },
+      { asset: "Persona pain point", channel: "Community post", format: "Discussion thread", notes: "Post the pain point as a genuine question in a relevant group; mention the product only in replies.", cadence: "Day 1" },
+    ],
   };
 }
 
