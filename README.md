@@ -27,6 +27,81 @@ Every line it writes stays editable — just click on the text and type. There's
 
 To stop the app, go back to the Terminal and press `Ctrl + C`.
 
+## Never used a terminal? Start here — the complete beginner guide
+
+You don't need to know anything about coding. Follow these steps exactly, in order. Total time: about 10 minutes, once.
+
+### Step 1 — Install Node.js (one time only)
+
+Node.js is the free program that runs this app.
+
+1. Go to **https://nodejs.org** in your browser.
+2. Click the big green button that says **LTS** (that's the stable version) and download it.
+3. Open the downloaded file and click **Continue / Next** through the installer, like any other app.
+
+### Step 2 — Open the Terminal
+
+The Terminal is a window where you type commands instead of clicking buttons. It looks scary; you will only ever type three things.
+
+- **Mac:** press `Cmd + Space`, type `Terminal`, press Enter.
+- **Windows:** press the Windows key, type `PowerShell`, press Enter.
+
+### Step 3 — Go to this folder
+
+In the Terminal, type `cd ` (that's c, d, then **one space**) — then **drag this project's folder from Finder/Explorer straight into the Terminal window**. The folder's path appears automatically. Press Enter.
+
+> `cd` just means "change directory" — you're telling the Terminal which folder to work in.
+
+### Step 4 — Install and start (the only commands you'll ever need)
+
+Type this and press Enter (first time only — it downloads the app's parts, takes a minute):
+
+```
+npm install
+```
+
+Then type this and press Enter (this is the one you'll use every time):
+
+```
+npm run dev
+```
+
+When you see `Launch Command running at http://localhost:3000`, it's working. **Leave the Terminal window open** — closing it stops the app.
+
+### Step 5 — Open the app
+
+Open your normal browser (Chrome, Safari…) and go to:
+
+```
+http://localhost:3000
+```
+
+"localhost" means *this computer* — the app runs entirely on your machine; nothing is on the internet.
+
+### Your first 5 minutes — a guided tour
+
+1. You land on **V2**, the classic workspace. Click **"Try an example"** — the form fills itself with a sample product (a sleep mask called Driftwell).
+2. Click **"Generate campaign"** and wait. On the free local engine this takes **1–2 minutes** (V3 takes 2–5 — the button tells you what it's doing while you wait). If a popup says **"No AI is connected"**, you're in Demo mode — see the section above.
+3. When the copy appears: **click any sentence and just type** — everything the AI wrote is editable, like a document.
+4. Find the small **V2 | V3 pill** in the corner and click **V3**. This is the new multi-platform version:
+   - **Landing page** — what customers would see.
+   - **Workspace** (`Open the workspace`) — generate here too, then flip between the **Meta / Google / TikTok tabs** to see the same brief written natively for each platform. Scroll down to **KPI Targets** and click the dashed amber chips to type your goals (e.g. `50k`, `3.0×`).
+   - **Launch console** — click **Connect** on the three ad accounts (it's simulated — nothing real happens), tick a few ads, press **Launch selected**, and watch them go live step by step. The **Analytics** section starts counting and compares results against the KPI targets you typed.
+5. To stop the app: click on the Terminal window and press `Ctrl + C`. To start it again tomorrow: `npm run dev`.
+
+### When something goes wrong
+
+| What you see | What it means | What to do |
+|---|---|---|
+| `Error: listen EADDRINUSE ... port 3000` | The app is already running somewhere (maybe another Terminal window). | Close the other window, or type `kill $(lsof -ti :3000)` and press Enter, then `npm run dev` again. |
+| Browser says "can't connect" / "site can't be reached" | The app isn't running. | Go to the Terminal and run `npm run dev`. Keep that window open. |
+| `command not found: npm` | Node.js isn't installed (or the Terminal was open during install). | Do Step 1, then **close and reopen** the Terminal. |
+| The Generate button spins for ages | Normal on the free local engine — V3 writes a lot of copy. | Wait up to 5 minutes; the button shows a live timer. The paid API engine takes ~30 seconds. |
+| "No AI is connected" popup | Demo mode — the page filled with sample text, not text written for your brief. | See **"Connecting a real AI"** above. The sample is still fine for exploring the app. |
+| You edited something and want it back | There's no undo across generations. | Click **Generate campaign** again for a fresh draft (your KPI targets are kept). |
+
+**Is any of this on the internet?** No. Campaigns are saved as files in the `data/` folder on your computer, ad accounts and launches in V3 are simulated, and the only thing that ever leaves your machine is your product brief being sent to the AI when you generate (and even that stays local if you use the Claude Code engine).
+
 ## No AI connected? It still works — in Demo mode
 
 If the app can't find an AI to write with, it switches to **Demo mode**:
