@@ -1,0 +1,538 @@
+/* ================================================================
+   LAUNCH COMMAND v3 — shared dark design system
+   Loaded first on every /v3/ page; page CSS layers on top.
+   Space Grotesk (display) · Schibsted Grotesk (body) · IBM Plex Mono (labels)
+   ================================================================ */
+
+:root {
+  /* navy depth stack */
+  --bg-0: #070B14;
+  --bg-1: #0C1220;
+  --bg-2: #121A2C;
+
+  /* glass surfaces */
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-hi: rgba(255, 255, 255, 0.07);
+  --line: rgba(148, 163, 196, 0.14);
+  --line-hi: rgba(255, 255, 255, 0.08);
+
+  /* text */
+  --text-hi: #EDF1FA;
+  --text-mid: #A7B0C7;
+  --text-low: #5D6880;
+
+  /* accent — one family, used with restraint */
+  --accent: #5B7CFF;
+  --accent-hot: #8B5CF6;
+  --accent-soft: rgba(91, 124, 255, 0.14);
+  --glow: 0 0 40px rgba(91, 124, 255, 0.25);
+
+  /* signals */
+  --signal: #34D39A;
+  --signal-soft: rgba(52, 211, 154, 0.14);
+  --warn: #F5A524;
+  --warn-soft: rgba(245, 165, 36, 0.14);
+  --danger: #F0564F;
+  --danger-soft: rgba(240, 86, 79, 0.14);
+
+  /* platform hues (chips, borders, dots) */
+  --p-meta: #4B8DF8;
+  --p-meta-soft: rgba(75, 141, 248, 0.14);
+  --p-google: #F5C543;
+  --p-google-soft: rgba(245, 197, 67, 0.13);
+  --p-tiktok: #3EE6DB;
+  --p-tiktok-soft: rgba(62, 230, 219, 0.12);
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Schibsted Grotesk", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-sm: 8px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --rail-w: 264px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg-0); /* immediate — prevents white flash */
+}
+
+body {
+  background: var(--bg-0);
+  color: var(--text-mid);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* film-grain overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection { background: rgba(91, 124, 255, 0.35); color: var(--text-hi); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--text-hi);
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+/* custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-0); }
+::-webkit-scrollbar-thumb { background: #1D2740; border-radius: 6px; border: 2px solid var(--bg-0); }
+::-webkit-scrollbar-thumb:hover { background: #2A3757; }
+
+/* ================================================================
+   PRIMITIVES
+   ================================================================ */
+
+/* mono micro-label */
+.k-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-low);
+}
+
+/* eyebrow chip */
+.k-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: var(--panel);
+}
+
+.k-eyebrow::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* glass card */
+.k-card {
+  background: var(--panel);
+  border: 1px solid var(--line-hi);
+  border-radius: var(--radius);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 24px;
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.k-card.hoverable:hover {
+  border-color: rgba(91, 124, 255, 0.35);
+  background: var(--panel-hi);
+  transform: translateY(-2px);
+}
+
+/* primary button — the only glowing element besides hero orbs */
+.k-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hot));
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: var(--glow);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), filter 0.18s var(--ease);
+}
+
+.k-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+.k-btn:active:not(:disabled) { transform: translateY(0); }
+.k-btn:disabled { opacity: 0.55; cursor: wait; box-shadow: none; }
+
+.k-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-mid);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px 22px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+
+.k-btn-ghost:hover { color: var(--text-hi); border-color: rgba(148, 163, 196, 0.4); background: var(--panel); }
+.k-btn-ghost.danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+
+/* small mono chip */
+.k-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--panel-hi);
+  color: var(--text-mid);
+  border: 1px solid transparent;
+}
+
+.k-chip.meta   { color: var(--p-meta);   background: var(--p-meta-soft); }
+.k-chip.google { color: var(--p-google); background: var(--p-google-soft); }
+.k-chip.tiktok { color: var(--p-tiktok); background: var(--p-tiktok-soft); }
+.k-chip.ok     { color: var(--signal);   background: var(--signal-soft); }
+.k-chip.warn   { color: var(--warn);     background: var(--warn-soft); }
+.k-chip.danger { color: var(--danger);   background: var(--danger-soft); }
+.k-chip.accent { color: #9DB2FF;         background: var(--accent-soft); }
+
+/* status dot */
+.k-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--text-low);
+  flex-shrink: 0;
+}
+
+.k-dot.live { background: var(--signal); animation: k-pulse 1.8s ease-in-out infinite; }
+.k-dot.warn { background: var(--warn); }
+.k-dot.off  { background: var(--text-low); }
+
+@keyframes k-pulse { 50% { opacity: 0.35; } }
+
+/* ================================================================
+   FORMS
+   ================================================================ */
+
+.k-field label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-low);
+  margin-bottom: 8px;
+}
+
+.k-field input,
+.k-field textarea,
+.k-field select {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text-hi);
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.k-field input:focus,
+.k-field textarea:focus,
+.k-field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.k-field ::placeholder { color: var(--text-low); }
+
+.k-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235D6880' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+/* editable AI output field */
+.ai-field {
+  display: block;
+  min-height: 1.2em;
+  outline: none;
+  border-radius: 4px;
+  color: var(--text-hi);
+}
+
+.ai-field:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-low);
+  font-style: italic;
+}
+
+.ai-field:focus { background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+/* ================================================================
+   TOASTS
+   ================================================================ */
+
+.toast-stack {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.toast {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-hi);
+  background: #171F33;
+  border: 1px solid var(--line-hi);
+  border-radius: 10px;
+  padding: 11px 16px 11px 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  animation: toast-in 0.32s var(--ease);
+  max-width: 380px;
+}
+
+.toast::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  flex-shrink: 0;
+}
+
+.toast.toast-warn::before { background: var(--warn); }
+.toast.toast-danger::before { background: var(--danger); }
+.toast.out { animation: toast-out 0.3s var(--ease) forwards; }
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(8px); } }
+
+/* ================================================================
+   SKELETON SHIMMER
+   ================================================================ */
+
+.k-skeleton, .loading .ai-field {
+  color: transparent !important;
+  border-radius: 6px;
+  background: linear-gradient(100deg, var(--bg-2) 40%, #1B2540 50%, var(--bg-2) 60%);
+  background-size: 200% 100%;
+  animation: k-shimmer 1.4s linear infinite;
+  pointer-events: none;
+  min-height: 1em;
+}
+
+.loading .ai-field:empty::before { color: transparent; }
+
+@keyframes k-shimmer { to { background-position: -200% 0; } }
+
+/* ================================================================
+   SHARED RAIL (workspace + launch console)
+   ================================================================ */
+
+.rail {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--rail-w);
+  background: var(--bg-1);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 30px 22px 24px;
+  z-index: 40;
+}
+
+.rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.rail-mark {
+  width: 38px; height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hot));
+  color: #fff;
+  font-size: 16px;
+  box-shadow: var(--glow);
+}
+
+.rail-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text-hi);
+  text-transform: uppercase;
+}
+
+.rail-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-low);
+  margin-top: 3px;
+}
+
+.rail-nav { margin-top: 26px; display: flex; flex-direction: column; gap: 2px; }
+
+.rail-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  color: var(--text-mid);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 13.5px;
+  transition: background 0.18s var(--ease), color 0.18s var(--ease);
+}
+
+.rail-link:hover { background: var(--panel-hi); color: var(--text-hi); }
+.rail-link.active { background: var(--accent-soft); color: var(--text-hi); }
+
+.rail-num {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: #9DB2FF;
+  background: var(--accent-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.rail-link.active .rail-num { background: var(--accent); color: #fff; }
+
+.rail-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rail-foot-note {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-low);
+}
+
+/* engine badge (shared with rail-foot) */
+.engine-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px 10px;
+}
+
+.engine-badge .k-dot { background: var(--text-low); }
+.engine-badge[data-mode="local"] .k-dot { background: var(--warn); }
+.engine-badge[data-mode="api"] .k-dot { background: var(--signal); }
+.engine-badge[data-mode="demo"] .k-dot { background: var(--danger); }
+
+/* page content next to a rail */
+.rail-main {
+  margin-left: var(--rail-w);
+  padding: 44px 52px 90px;
+  max-width: 1280px;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 900px) {
+  .rail {
+    position: fixed;
+    inset: 0 0 auto 0;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .rail-nav { margin-top: 0; flex-direction: row; }
+  .rail-foot { display: none; }
+  .rail-sub { display: none; }
+  .rail-main { margin-left: 0; padding: 84px 18px 70px; }
+}
+
+/* ================================================================
+   MOTION DISCIPLINE
+   ================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

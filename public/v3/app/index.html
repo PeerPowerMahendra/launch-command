@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>Launch Command — v3 Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/v3/v3.css">
+  <link rel="stylesheet" href="/v3/app/app.css">
+</head>
+<body>
+
+  <!-- ============ RAIL ============ -->
+  <aside class="rail">
+    <a class="rail-brand" href="/v3/">
+      <span class="rail-mark" aria-hidden="true">▲</span>
+      <span class="rail-brand-text">
+        <span class="rail-name">Launch Command</span>
+        <span class="rail-sub">v3 · Workspace</span>
+      </span>
+    </a>
+
+    <div class="rail-campaign" id="rail-campaign">
+      <div class="k-label">Active campaign</div>
+      <div id="side-campaign-name" class="rail-campaign-name">—</div>
+      <div id="side-campaign-meta" class="rail-campaign-meta">Nothing generated yet</div>
+    </div>
+
+    <nav class="rail-nav" aria-label="Workspace modules">
+      <a class="rail-link" href="#m00"><span class="rail-num">00</span>Brief</a>
+      <a class="rail-link" href="#m01"><span class="rail-num">01</span>Persona &amp; Positioning</a>
+      <a class="rail-link" href="#m02"><span class="rail-num">02</span>Platform Ads</a>
+      <a class="rail-link" href="#m03"><span class="rail-num">03</span>Email Sequence</a>
+      <a class="rail-link" href="#m04"><span class="rail-num">04</span>KPI Targets</a>
+      <span class="rail-sep" aria-hidden="true"></span>
+      <a class="rail-link rail-link-ext" href="/v3/launch/">Launch console →</a>
+      <a class="rail-link rail-link-ext" href="/v3/">Landing</a>
+    </nav>
+
+    <div class="rail-foot">
+      <div id="engine-badge" class="engine-badge" title="Which engine generates your campaigns">
+        <span class="k-dot"></span><span id="engine-text">Engine · detecting…</span>
+      </div>
+      <div class="rail-foot-note">v3.0 · simulated launch</div>
+    </div>
+  </aside>
+
+  <!-- fixed, dismissible error banner -->
+  <div id="error-banner" class="error-banner" role="alert" hidden>
+    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.5"></circle><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"></path>
+    </svg>
+    <span id="error-text"></span>
+    <button id="error-dismiss" type="button">Dismiss</button>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <main class="rail-main">
+
+    <!-- ======== 00 · BRIEF ======== -->
+    <section id="m00" class="module">
+      <header class="hero">
+        <span class="k-eyebrow">00 · Input — one brief drives everything</span>
+        <h1 class="hero-title">Brief once.<br>Launch on every platform.</h1>
+        <p class="hero-desc">
+          Describe the product one time. The engine drafts the persona, the positioning,
+          three Meta variants, a full Google responsive search ad, three TikTok scripts,
+          and a three-touch email sequence — every line stays editable.
+        </p>
+      </header>
+
+      <form id="gen-form" class="k-card gen-card" autocomplete="off">
+        <div class="gen-card-head">
+          <span class="k-label gen-card-title">Input brief</span>
+          <button id="try-example" class="k-btn-ghost mini-btn" type="button">Try an example</button>
+        </div>
+
+        <div class="gen-legend">01 · The product</div>
+        <div class="gen-grid">
+          <div class="k-field">
+            <label for="f-name">Product / brand name</label>
+            <input id="f-name" type="text" required placeholder="e.g. Driftwell">
+          </div>
+          <div class="k-field">
+            <label for="f-category">Category</label>
+            <input id="f-category" type="text" required placeholder="e.g. Weighted sleep mask">
+          </div>
+          <div class="k-field">
+            <label for="f-price">Price point</label>
+            <input id="f-price" type="text" required placeholder="e.g. $79 one-time">
+          </div>
+          <div class="k-field">
+            <label for="f-tone">Brand tone</label>
+            <select id="f-tone" required>
+              <option>Confident and direct</option>
+              <option>Warm and reassuring</option>
+              <option>Playful and bold</option>
+              <option>Premium and minimal</option>
+              <option>Scientific and credible</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="gen-legend">02 · The problem &amp; the edge</div>
+        <div class="gen-grid">
+          <div class="k-field span2">
+            <label for="f-problem">Core problem it solves</label>
+            <textarea id="f-problem" rows="3" required placeholder="The specific, painful problem your customer has right now"></textarea>
+          </div>
+          <div class="k-field span2">
+            <label for="f-mechanism">Signature mechanism — what makes it different</label>
+            <textarea id="f-mechanism" rows="3" required placeholder="The unique method, ingredient, or design that makes it work"></textarea>
+          </div>
+          <div class="k-field span2">
+            <label for="f-audience">Target audience <em class="label-note">optional — leave blank and the AI will infer who has this problem</em></label>
+            <textarea id="f-audience" rows="2" placeholder="Leave blank to let the AI infer the persona from the problem itself"></textarea>
+          </div>
+        </div>
+
+        <div class="gen-legend">03 · The market &amp; the offer</div>
+        <div class="gen-grid">
+          <div class="k-field">
+            <label for="f-competitor">Main competitor / status quo</label>
+            <input id="f-competitor" type="text" required placeholder="What they use or do today instead">
+          </div>
+          <div class="k-field">
+            <label for="f-offer">Launch offer</label>
+            <input id="f-offer" type="text" required placeholder="e.g. 25% off launch week, ends Sunday">
+          </div>
+        </div>
+
+        <div class="gen-foot">
+          <button id="gen-btn" type="submit" class="k-btn">
+            <span id="gen-spinner" class="gen-spinner" hidden aria-hidden="true"></span>
+            <span id="gen-label">Generate campaign</span>
+            <span class="gen-arrow" aria-hidden="true">→</span>
+          </button>
+          <span id="gen-hint" class="gen-hint">Every output stays editable</span>
+        </div>
+      </form>
+    </section>
+
+    <!-- dismissible demo-data notice -->
+    <div id="demo-notice" class="demo-notice" role="status" hidden>
+      <span class="k-chip danger">Demo data</span>
+      <p>
+        No AI engine is connected — this copy is <b>static sample data</b>, not written for your brief.
+        Install the Claude Code CLI or add an Anthropic API key to <code>.env</code>, then restart the app to generate real copy.
+      </p>
+      <button id="demo-dismiss" class="k-btn-ghost mini-btn" type="button">Dismiss</button>
+    </div>
+
+    <!-- ======== 01 · PERSONA & POSITIONING ======== -->
+    <section id="m01" class="module ai-module">
+      <div class="module-head">
+        <span class="module-num">01</span>
+        <h2>Persona &amp; Positioning</h2>
+        <span class="k-chip warn stale-badge">Stale — regeneration failed</span>
+      </div>
+      <p class="module-desc">Who we are talking to and the one sentence the brand says against the status quo. Click any line to revise it.</p>
+
+      <div class="duo-grid">
+        <article class="k-card persona-card reveal-item">
+          <div class="card-head">
+            <span class="k-chip accent">Target persona</span>
+          </div>
+          <div class="persona-ident">
+            <span class="ai-field one-line persona-name" contenteditable="true" spellcheck="false" data-field="persona.name" data-placeholder="Persona name"></span>
+            <span class="persona-meta">
+              <span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="persona.age_range" data-placeholder="Age range"></span>
+              <span class="dot-sep" aria-hidden="true">·</span>
+              <span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="persona.location" data-placeholder="Location"></span>
+            </span>
+          </div>
+          <div class="persona-rows">
+            <div class="p-row"><span class="k-label">Pain point</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.pain_point" data-placeholder="Awaiting generation"></span></div>
+            <div class="p-row"><span class="k-label">Current alternative</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.alternative" data-placeholder="Awaiting generation"></span></div>
+            <div class="p-row"><span class="k-label">Core desire</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.core_desire" data-placeholder="Awaiting generation"></span></div>
+            <div class="p-row"><span class="k-label">Platform habits</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.platforms" data-placeholder="Awaiting generation"></span></div>
+          </div>
+          <div class="persona-secondary">
+            <span class="k-label">Secondary audience</span>
+            <span class="ai-field" contenteditable="true" spellcheck="false" data-field="persona.secondary" data-placeholder="Awaiting generation"></span>
+          </div>
+        </article>
+
+        <article class="k-card positioning-card reveal-item">
+          <div class="card-head">
+            <span class="k-chip accent">Core positioning</span>
+            <button class="copy-btn" type="button" data-copy="positioning" aria-label="Copy positioning statement">Copy</button>
+          </div>
+          <blockquote class="positioning-quote ai-field" contenteditable="true" spellcheck="false" data-field="positioning" data-placeholder="Your positioning statement will appear here after generation."></blockquote>
+          <p class="positioning-note">One sentence, spoken against the status quo. Use it everywhere the brand opens its mouth.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======== 02 · PLATFORM ADS ======== -->
+    <section id="m02" class="module ai-module">
+      <div class="module-head">
+        <span class="module-num">02</span>
+        <h2>Platform Ads</h2>
+        <span class="k-chip warn stale-badge">Stale — regeneration failed</span>
+      </div>
+      <p class="module-desc">The same brief, translated into each platform's native format. Previews approximate real placements — no logos, no fake imagery.</p>
+
+      <div class="tabbar" role="tablist" aria-label="Ad platforms">
+        <button class="tab-btn active" id="tab-meta" type="button" role="tab" aria-selected="true" aria-controls="panel-meta" data-tab="meta">
+          Meta <span class="tab-count">3 variants</span>
+        </button>
+        <button class="tab-btn" id="tab-google" type="button" role="tab" aria-selected="false" aria-controls="panel-google" data-tab="google" tabindex="-1">
+          Google <span class="tab-count">1 RSA · 10 headlines</span>
+        </button>
+        <button class="tab-btn" id="tab-tiktok" type="button" role="tab" aria-selected="false" aria-controls="panel-tiktok" data-tab="tiktok" tabindex="-1">
+          TikTok <span class="tab-count">3 scripts</span>
+        </button>
+      </div>
+
+      <div id="panel-meta" class="tab-panel" role="tabpanel" aria-labelledby="tab-meta"></div>
+      <div id="panel-google" class="tab-panel" role="tabpanel" aria-labelledby="tab-google" hidden></div>
+      <div id="panel-tiktok" class="tab-panel" role="tabpanel" aria-labelledby="tab-tiktok" hidden></div>
+    </section>
+
+    <!-- ======== 03 · EMAIL SEQUENCE ======== -->
+    <section id="m03" class="module ai-module">
+      <div class="module-head">
+        <span class="module-num">03</span>
+        <h2>Email Sequence</h2>
+        <span class="k-chip warn stale-badge">Stale — regeneration failed</span>
+      </div>
+      <p class="module-desc">A three-touch launch arc: announce, deepen, then close with urgency. Send timing is fixed to the launch window.</p>
+
+      <div class="timeline">
+        <div class="tl-item reveal-item">
+          <span class="tl-dot dot-1" aria-hidden="true">1</span>
+          <article class="k-card email-card">
+            <div class="card-head">
+              <span class="k-chip accent">Email 1 · Announcement</span>
+              <span class="k-label email-send">Send: launch day</span>
+              <button class="copy-btn" type="button" data-copy="email:0" aria-label="Copy email 1">Copy</button>
+            </div>
+            <div class="email-subject ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.0.subject" data-placeholder="Subject line"></div>
+            <div class="email-row"><span class="k-label">Preview</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.0.preview" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">Goal</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.0.goal" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">Body</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.0.body" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">CTA</span><span class="ai-field one-line cta-pill" contenteditable="true" spellcheck="false" data-field="emails.0.cta" data-placeholder="—"></span></div>
+          </article>
+        </div>
+
+        <div class="tl-item reveal-item">
+          <span class="tl-dot dot-2" aria-hidden="true">2</span>
+          <article class="k-card email-card">
+            <div class="card-head">
+              <span class="k-chip ok">Email 2 · Benefit Deep-Dive</span>
+              <span class="k-label email-send">Send: +2 days</span>
+              <button class="copy-btn" type="button" data-copy="email:1" aria-label="Copy email 2">Copy</button>
+            </div>
+            <div class="email-subject ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.1.subject" data-placeholder="Subject line"></div>
+            <div class="email-row"><span class="k-label">Preview</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.1.preview" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">Goal</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.1.goal" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">Body</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.1.body" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">CTA</span><span class="ai-field one-line cta-pill" contenteditable="true" spellcheck="false" data-field="emails.1.cta" data-placeholder="—"></span></div>
+          </article>
+        </div>
+
+        <div class="tl-item reveal-item">
+          <span class="tl-dot dot-3" aria-hidden="true">3</span>
+          <article class="k-card email-card">
+            <div class="card-head">
+              <span class="k-chip warn">Email 3 · Urgency</span>
+              <span class="k-label email-send">Send: final 48 hours</span>
+              <button class="copy-btn" type="button" data-copy="email:2" aria-label="Copy email 3">Copy</button>
+            </div>
+            <div class="email-subject ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.2.subject" data-placeholder="Subject line"></div>
+            <div class="email-row"><span class="k-label">Preview</span><span class="ai-field one-line" contenteditable="true" spellcheck="false" data-field="emails.2.preview" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">Goal</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.2.goal" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">Body</span><span class="ai-field" contenteditable="true" spellcheck="false" data-field="emails.2.body" data-placeholder="Awaiting generation"></span></div>
+            <div class="email-row"><span class="k-label">CTA</span><span class="ai-field one-line cta-pill" contenteditable="true" spellcheck="false" data-field="emails.2.cta" data-placeholder="—"></span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== 04 · KPI TARGETS (manual — the AI never writes this) ======== -->
+    <section id="m04" class="module">
+      <div class="module-head">
+        <span class="module-num">04</span>
+        <h2>KPI Targets</h2>
+        <span class="k-chip warn">Manual entry</span>
+      </div>
+      <p class="module-desc">Business targets, not creative — the launch console compares these against live results.</p>
+
+      <div class="k-card kpi-card">
+        <div class="table-scroll">
+          <table class="kpi-table">
+            <thead>
+              <tr><th>Metric</th><th>Target</th><th>Window</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="kpi-metric">Launch Reach</td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="reach.target" data-placeholder="Set target"></span></td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="reach.window" data-placeholder="Set window"></span></td>
+              </tr>
+              <tr>
+                <td class="kpi-metric">CTR</td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="ctr.target" data-placeholder="Set target"></span></td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="ctr.window" data-placeholder="Set window"></span></td>
+              </tr>
+              <tr>
+                <td class="kpi-metric">CAC</td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="cac.target" data-placeholder="Set target"></span></td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="cac.window" data-placeholder="Set window"></span></td>
+              </tr>
+              <tr>
+                <td class="kpi-metric">Email Open Rate</td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="open_rate.target" data-placeholder="Set target"></span></td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="open_rate.window" data-placeholder="Set window"></span></td>
+              </tr>
+              <tr>
+                <td class="kpi-metric">Conversion Rate</td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="conv_rate.target" data-placeholder="Set target"></span></td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="conv_rate.window" data-placeholder="Set window"></span></td>
+              </tr>
+              <tr>
+                <td class="kpi-metric">ROAS</td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="roas.target" data-placeholder="Set target"></span></td>
+                <td><span class="chip-input" contenteditable="true" spellcheck="false" data-kpi="roas.window" data-placeholder="Set window"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-foot">Launch Command v3 · generated copy is a first draft — edit everything.</footer>
+  </main>
+
+  <!-- persistent bottom action bar (appears when a campaign exists) -->
+  <div class="action-bar" aria-label="Campaign status">
+    <div class="action-left">
+      <span id="asset-count" class="k-label asset-count">—</span>
+      <span id="save-pip" class="k-label save-pip">Saved ✓</span>
+    </div>
+    <a class="k-btn action-cta" href="/v3/launch/">Open Launch Console →</a>
+  </div>
+
+  <script src="/v3/v3-shared.js"></script>
+  <script src="/v3/app/app.js"></script>
+  <script src="/version-toggle.js" defer></script>
+</body>
+</html>
