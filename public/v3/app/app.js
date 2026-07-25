@@ -891,7 +891,6 @@
     L.push("");
     L.push("### 1.1 Target Audience Definition");
     L.push("");
-    L.push(`*Persona shorthand: ${mdLine(per.name)} · ${mdLine(per.age_range)} · ${mdLine(per.location)}*`);
     L.push("");
     L.push("| Layer | Specification |");
     L.push("|---|---|");
