@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>Launch Console — Launch Command v4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/v4/v4.css">
+  <link rel="stylesheet" href="/v4/launch/launch.css">
+</head>
+<body>
+
+  <!-- ============ RAIL ============ -->
+  <aside class="rail">
+    <a class="rail-brand" href="/v4/">
+      <span class="rail-mark">▲</span>
+      <span>
+        <span class="rail-name">Launch Command</span>
+        <span class="rail-sub">v4 · Launch Console</span>
+      </span>
+    </a>
+
+    <nav class="rail-nav" aria-label="Console sections">
+      <a class="rail-link active" href="#accounts"><span class="rail-num">01</span>Accounts</a>
+      <a class="rail-link" href="#launch"><span class="rail-num">02</span>Launch</a>
+      <a class="rail-link" href="#history"><span class="rail-num">03</span>History</a>
+      <a class="rail-link" href="#analytics"><span class="rail-num">04</span>Analytics</a>
+      <div class="rail-sep" role="presentation"></div>
+      <a class="rail-link" href="/v4/app/">Workspace <span class="rail-arrow" aria-hidden="true">→</span></a>
+      <a class="rail-link" href="/v4/">Landing</a>
+    </nav>
+
+    <div class="rail-foot">
+      <span class="engine-badge" id="engine-badge">
+        <span class="k-dot"></span>
+        <span id="engine-text">Engine · checking…</span>
+      </span>
+      <span class="rail-foot-note">Simulated pipeline · real APIs stubbed</span>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="rail-main">
+
+    <header class="lc-head">
+      <span class="k-eyebrow">Launch Console</span>
+      <h1 class="lc-title">Ship the campaign to <span class="lc-title-accent">every channel</span>.</h1>
+      <p class="lc-lede">Connect ad accounts, pick your units, and watch the pipeline take them live. Everything below is simulated — the plumbing is real, the platforms are stubs.</p>
+    </header>
+
+    <!-- 01 ACCOUNTS -->
+    <section class="lc-section" id="accounts" aria-labelledby="accounts-h">
+      <div class="lc-section-head">
+        <div>
+          <span class="k-label">01 — Accounts</span>
+          <h2 id="accounts-h" class="lc-h2">Ad account connections</h2>
+        </div>
+        <p class="lc-caption">Simulated connection — real OAuth lands behind this button.</p>
+      </div>
+      <div class="acct-grid" id="acct-grid" aria-busy="true">
+        <div class="k-card acct-card"><div class="k-skeleton" style="height:88px"></div></div>
+        <div class="k-card acct-card"><div class="k-skeleton" style="height:88px"></div></div>
+        <div class="k-card acct-card"><div class="k-skeleton" style="height:88px"></div></div>
+      </div>
+    </section>
+
+    <!-- 02 LAUNCH -->
+    <section class="lc-section" id="launch" aria-labelledby="launch-h">
+      <div class="lc-section-head">
+        <div>
+          <span class="k-label">02 — Launch</span>
+          <h2 id="launch-h" class="lc-h2">Launch composer</h2>
+        </div>
+        <p class="lc-caption">Seven launchable units from the generated campaign.</p>
+      </div>
+
+      <div id="composer-body">
+        <div class="unit-grid" aria-hidden="true">
+          <div class="k-card unit-card"><div class="k-skeleton" style="height:64px"></div></div>
+          <div class="k-card unit-card"><div class="k-skeleton" style="height:64px"></div></div>
+          <div class="k-card unit-card"><div class="k-skeleton" style="height:64px"></div></div>
+        </div>
+      </div>
+
+      <div class="launch-bar" id="launch-bar" hidden>
+        <div class="launch-bar-inner k-card">
+          <span class="launch-count mono-num" id="launch-count">0 selected</span>
+          <div class="budget-field">
+            <label class="k-label" for="budget-input">Daily budget</label>
+            <div class="budget-wrap">
+              <span class="budget-prefix" aria-hidden="true">$</span>
+              <input id="budget-input" type="number" min="1" max="100000" step="1" value="50" inputmode="numeric">
+            </div>
+          </div>
+          <button class="k-btn" id="launch-btn" disabled>Launch selected <span aria-hidden="true">→</span></button>
+        </div>
+        <p class="launch-error" id="launch-error" role="alert" hidden></p>
+      </div>
+
+      <!-- Queue -->
+      <div class="queue-block" id="queue-block">
+        <div class="lc-section-head lc-section-head-sub">
+          <div>
+            <span class="k-label">Pipeline</span>
+            <h3 class="lc-h3">Launch queue</h3>
+          </div>
+          <p class="lc-caption">Refresh mid-launch — the pipeline resumes exactly where it was (state is server-computed).</p>
+        </div>
+        <div id="queue-body">
+          <div class="k-card lc-empty">
+            <p>No active pipeline. Select units above and hit launch.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 HISTORY -->
+    <section class="lc-section" id="history" aria-labelledby="history-h">
+      <div class="lc-section-head">
+        <div>
+          <span class="k-label">03 — History</span>
+          <h2 id="history-h" class="lc-h2">Launch history</h2>
+        </div>
+        <button class="k-btn-ghost danger" id="reset-btn" type="button">Reset simulation</button>
+      </div>
+      <div id="history-body">
+        <div class="k-card lc-empty"><p>No launches yet.</p></div>
+      </div>
+    </section>
+
+    <!-- 04 ANALYTICS -->
+    <section class="lc-section" id="analytics" aria-labelledby="analytics-h">
+      <div class="lc-section-head">
+        <div>
+          <span class="k-label">04 — Analytics</span>
+          <h2 id="analytics-h" class="lc-h2">Performance</h2>
+        </div>
+        <p class="lc-caption" id="analytics-caption">Metrics grow on every poll — server-computed from wall-clock, so a refresh never loses ground.</p>
+      </div>
+      <div id="analytics-body">
+        <div class="k-card lc-empty"><p>Nothing live yet — launch your first ad.</p></div>
+      </div>
+      <p class="lc-footnote" id="analytics-footnote" hidden>Simulated metrics — deterministic per launch, growth plateaus after a few days.</p>
+    </section>
+
+  </main>
+
+  <script src="/api-base.js"></script>
+  <script src="/v4/v4-shared.js"></script>
+  <script src="/v4/launch/launch.js"></script>
+  <script src="/version-toggle.js" defer></script>
+</body>
+</html>

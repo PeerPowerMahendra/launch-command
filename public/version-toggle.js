@@ -1,7 +1,9 @@
-/* Floating version switcher — shared by v2 (/) and v3 (/v3/...). Self-styling, no deps. */
+/* Floating version switcher. V2 is hidden for now (reachable at /index.html);
+   the pill offers V3 (stable) and V4 (latest design). Self-styling, no deps. */
 (function () {
   "use strict";
 
+  var onV4 = location.pathname.indexOf("/v4") === 0;
   var onV3 = location.pathname.indexOf("/v3") === 0;
 
   var style = document.createElement("style");
@@ -20,8 +22,8 @@
   pill.className = "lc-version-pill";
   pill.setAttribute("aria-label", "Version switcher");
   pill.innerHTML =
-    '<a href="/" class="' + (onV3 ? "" : "on") + '" title="v2 · Campaign workspace">V2</a>' +
-    '<a href="/v3/" class="' + (onV3 ? "on" : "") + '" title="v3 · Multi-platform launch suite">V3</a>';
+    '<a href="/v3/" class="' + (onV3 ? "on" : "") + '" title="v3 · stable">V3</a>' +
+    '<a href="/v4/" class="' + (onV4 ? "on" : "") + '" title="v4 · latest design">V4</a>';
 
   function mount() {
     document.head.appendChild(style);

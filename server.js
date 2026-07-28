@@ -30,6 +30,10 @@ const DATA_DIR = path.join(__dirname, "data");
 const BOARD_FILE = path.join(DATA_DIR, "board.json");
 
 app.use(express.json({ limit: "1mb" }));
+
+// V4 is the current public face; V2 hidden, V3 still reachable at /v3/.
+app.get("/", (req, res) => res.redirect(302, "/v4/"));
+
 app.use(express.static(path.join(__dirname, "public")));
 
 /* CORS — the public Netlify frontend calls this API through a tunnel. */

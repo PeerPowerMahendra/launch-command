@@ -6,3 +6,10 @@
   publish = "public"
 
 # No functions, no build command: plain static deploy.
+
+# V4 is the current public face; V2 hidden, V3 stays reachable at /v3/.
+[[redirects]]
+  from = "/"
+  to = "/v4/"
+  status = 302
+  force = true
