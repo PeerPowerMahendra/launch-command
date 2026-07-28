@@ -10,6 +10,7 @@ const path = require("path");
 const { runEngine, generationMode, SYSTEM_PROMPT, httpError, streamJson } = require("./engine");
 const { V3_CAMPAIGN_SCHEMA, V3_SHAPE_INSTRUCTIONS, buildBriefV3, normalizeV3 } = require("./v3-campaign");
 const { buildDemoCampaignV3 } = require("./demo-campaign");
+const { metaConfigured, verifyAccount, createMetaLaunch } = require("./meta-ads");
 
 /* ---------------- deterministic PRNG ---------------- */
 
@@ -161,14 +162,29 @@ module.exports = function createV3Router({ DATA_DIR }) {
   /* ---------------- accounts (mock connect — future OAuth seam) ---------------- */
 
   router.get("/accounts", (req, res) => {
-    res.json({ accounts: readJson(ACCOUNTS_FILE, ACCOUNTS_SEED) });
+    const accounts = readJson(ACCOUNTS_FILE, ACCOUNTS_SEED);
+    accounts.meta = { ...accounts.meta, live_api: metaConfigured() };
+    res.json({ accounts });
   });
 
-  router.put("/accounts/:platform", (req, res) => {
+  router.put("/accounts/:platform", async (req, res) => {
     const platform = req.params.platform;
     if (!CONNECT_DETAILS[platform]) return res.status(404).json({ error: `Unknown platform: ${platform}` });
     const accounts = readJson(ACCOUNTS_FILE, ACCOUNTS_SEED);
     const connected = !!(req.body || {}).connected;
+
+    // Meta with credentials configured → REAL connection, verified live.
+    if (platform === "meta" && connected && metaConfigured()) {
+      try {
+        const info = await verifyAccount();
+        accounts.meta = { connected: true, real: true, ...info, connected_at: new Date().toISOString() };
+        writeJson(ACCOUNTS_FILE, accounts);
+        return res.json({ accounts: { ...accounts, meta: { ...accounts.meta, live_api: true } } });
+      } catch (err) {
+        return res.status(err.httpStatus || 502).json({ error: err.message });
+      }
+    }
+
     accounts[platform] = connected
       ? { connected: true, ...CONNECT_DETAILS[platform], connected_at: new Date().toISOString() }
       : { connected: false };
@@ -179,6 +195,16 @@ module.exports = function createV3Router({ DATA_DIR }) {
   /* ---------------- launch simulation ---------------- */
 
   function itemState(record, item, now) {
+    // Real Meta items: created via the Marketing API, paused for review.
+    if (item.real) {
+      return {
+        status: "paused",
+        current_step: "Created — paused in Ads Manager",
+        step_index: STAGES.length,
+        progress: 1,
+        ads_manager_url: item.meta && item.meta.ads_manager_url,
+      };
+    }
     const startedAt = new Date(record.created_at).getTime() + item.start_offset_ms;
     const elapsed = now - startedAt;
     if (elapsed < 0) return { status: "queued", current_step: "Queued", step_index: -1, progress: 0 };
@@ -248,12 +274,14 @@ module.exports = function createV3Router({ DATA_DIR }) {
       return { ...item, ...state, metrics: itemMetrics(record, item, state, now) };
     });
     const statuses = items.map((i) => i.status);
-    const status = statuses.every((s) => s === "live") ? "live"
+    const terminal = statuses.every((s) => s === "live" || s === "paused");
+    const status = terminal
+      ? (statuses.includes("paused") ? "paused" : "live")
       : statuses.some((s) => s === "launching") ? "launching" : "queued";
     return { ...record, items, status };
   }
 
-  router.post("/launch", (req, res) => {
+  router.post("/launch", async (req, res) => {
     const { items, budget_daily } = req.body || {};
     const saved = readJson(CAMPAIGN_FILE, { campaign: null });
     if (!saved.campaign) {
@@ -273,6 +301,26 @@ module.exports = function createV3Router({ DATA_DIR }) {
       }
     }
 
+    // REAL path: Meta items go to the Marketing API (created PAUSED) when the
+    // meta account is a live-API connection. Fail the whole launch loudly if
+    // Meta refuses — never silently fall back to simulation for these items.
+    const metaIsReal = accounts.meta && accounts.meta.real;
+    const metaItems = items.filter((it) => it.platform === "meta");
+    let metaResult = null;
+    if (metaIsReal && metaItems.length) {
+      const pa = saved.campaign.platform_ads;
+      const selectedAds = metaItems.map((it) => pa.meta[it.ad_index]).filter(Boolean);
+      try {
+        metaResult = await createMetaLaunch({
+          campaignName: (saved.brief && saved.brief.name) || "Launch Command",
+          ads: selectedAds,
+          budgetDaily: Number(budget_daily) || 50,
+        });
+      } catch (err) {
+        return res.status(err.httpStatus || 502).json({ error: err.message });
+      }
+    }
+
     const id = "L-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
     const seedRand = mulberry32(hashString(id));
     const pa = saved.campaign.platform_ads;
@@ -285,6 +333,8 @@ module.exports = function createV3Router({ DATA_DIR }) {
       aov: (saved.brief && String(saved.brief.price).replace(/[^0-9.]/g, "")) || "79",
       items: items.map((it, idx) => {
         const source = it.platform === "google" ? null : (pa[it.platform] || [])[it.ad_index];
+        const isRealMeta = it.platform === "meta" && metaResult;
+        const createdAd = isRealMeta && metaResult.ads.find((a) => source && a.angle === source.angle);
         return {
           id: "i" + idx,
           platform: it.platform,
@@ -293,6 +343,15 @@ module.exports = function createV3Router({ DATA_DIR }) {
           angle: source ? source.angle : null,
           start_offset_ms: idx * 1500,
           duration_ms: Math.round(12000 + seedRand() * 6000),
+          ...(isRealMeta ? {
+            real: true,
+            meta: {
+              campaign_id: metaResult.campaign_id,
+              adset_id: metaResult.adset_id,
+              ad_id: createdAd ? createdAd.ad_id : null,
+              ads_manager_url: metaResult.ads_manager_url,
+            },
+          } : {}),
         };
       }),
     };

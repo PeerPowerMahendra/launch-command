@@ -40,19 +40,20 @@
     card.style.setProperty("--tint", meta.hue);
     card.style.setProperty("--tint-soft", meta.soft);
 
+    const isLiveApi = key === "meta" && acct.live_api;
     card.innerHTML = `
       <div class="acct-head">
         <span class="acct-glyph" aria-hidden="true">${meta.glyph}</span>
         <div>
-          <div class="acct-name">${meta.label}</div>
+          <div class="acct-name">${meta.label} ${isLiveApi ? '<span class="k-chip ok">Live API</span>' : ""}</div>
           <div class="acct-state">
             <span class="k-dot ${acct.connected ? "live" : "off"}"></span>
-            ${acct.connected ? "Connected" : "Not connected"}
+            ${acct.connected ? (acct.real ? "Connected — real account" : "Connected (simulated)") : "Not connected"}
           </div>
         </div>
       </div>
       ${acct.connected
-        ? `<div class="acct-detail">${acct.account_name} <span>· ${acct.account_id}</span></div>`
+        ? `<div class="acct-detail">${acct.account_name} <span>· ${acct.account_id}${acct.currency ? " · " + acct.currency : ""}</span></div>`
         : ""}
       <button class="k-btn-ghost ${acct.connected ? "danger" : ""}" type="button">
         ${acct.connected ? "Disconnect" : "Connect"}
@@ -227,11 +228,13 @@
       return `<span class="${cls}"></span>`;
     }).join("");
 
-    const chip = item.status === "live"
-      ? '<span class="k-chip ok">Live</span>'
-      : item.status === "launching"
-        ? '<span class="k-chip accent">Launching</span>'
-        : '<span class="k-chip">Queued</span>';
+    const chip = item.status === "paused"
+      ? `<a class="k-chip warn" href="${item.ads_manager_url || "#"}" target="_blank" rel="noopener">Paused · Ads Manager ↗</a>`
+      : item.status === "live"
+        ? '<span class="k-chip ok">Live</span>'
+        : item.status === "launching"
+          ? '<span class="k-chip accent">Launching</span>'
+          : '<span class="k-chip">Queued</span>';
 
     row.innerHTML = `
       <div class="q-ident">
@@ -259,14 +262,16 @@
     body.innerHTML = "";
     body.appendChild(list);
 
-    // toast items that just went live
+    // toast items that just went live / got created for real
     for (const item of active.items) {
       const key = `${active.id}:${item.id}`;
-      if (item.status === "live" && !liveSeen.has(key)) {
+      if (liveSeen.has(key)) continue;
+      if (item.status === "live") {
         liveSeen.add(key);
         toast(`${item.name} is live`);
-      } else if (item.status === "live") {
+      } else if (item.status === "paused") {
         liveSeen.add(key);
+        toast(`${item.name} created in your ad account — paused for review`, "warn");
       }
     }
   }
@@ -284,11 +289,13 @@
       const platforms = [...new Set(r.items.map((i) => i.platform))];
       const det = document.createElement("details");
       det.className = "k-card h-record";
-      const rollup = r.status === "live"
-        ? '<span class="k-chip ok">Live</span>'
-        : r.status === "launching"
-          ? '<span class="k-chip accent">Launching</span>'
-          : '<span class="k-chip">Queued</span>';
+      const rollup = r.status === "paused"
+        ? '<span class="k-chip warn">Paused · real</span>'
+        : r.status === "live"
+          ? '<span class="k-chip ok">Live</span>'
+          : r.status === "launching"
+            ? '<span class="k-chip accent">Launching</span>'
+            : '<span class="k-chip">Queued</span>';
       det.innerHTML = `
         <summary>
           <span class="h-id">${r.id}</span>
@@ -498,7 +505,7 @@
   }
 
   function anyInFlight() {
-    return launches.some((r) => r.items.some((i) => i.status !== "live"));
+    return launches.some((r) => r.items.some((i) => i.status !== "live" && i.status !== "paused"));
   }
 
   function startFastPoll() {
