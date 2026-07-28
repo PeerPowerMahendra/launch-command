@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>Privacy Policy — Launch Command</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Schibsted+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/v3/v3.css">
+  <style>
+    .privacy-wrap { max-width: 720px; margin: 0 auto; padding: 90px 24px 80px; position: relative; z-index: 2; }
+    .privacy-wrap h1 { font-size: 2rem; margin-bottom: 8px; }
+    .privacy-date { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-low); margin-bottom: 40px; display: block; }
+    .privacy-wrap h2 { font-size: 1.15rem; margin: 36px 0 12px; }
+    .privacy-wrap p, .privacy-wrap li { color: var(--text-mid); font-size: 15px; line-height: 1.7; }
+    .privacy-wrap ul { padding-left: 22px; margin: 10px 0; }
+    .privacy-wrap a { color: #9DB2FF; }
+    .back-link { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main class="privacy-wrap">
+    <a class="back-link" href="/v3/">← Launch Command</a>
+    <h1>Privacy Policy</h1>
+    <span class="privacy-date">Effective July 26, 2026 · Launch Command (pre-launch software)</span>
+
+    <h2>What Launch Command is</h2>
+    <p>Launch Command is a single-user campaign workspace. It generates marketing copy from a product brief you write, and can create advertising campaigns in <em>your own</em> Meta ad account on your instruction.</p>
+
+    <h2>What data we collect</h2>
+    <ul>
+      <li><strong>Your product briefs and generated campaigns</strong> are stored as files on the computer running the app — not in any cloud database operated by us.</li>
+      <li><strong>We do not collect, sell, or share personal data.</strong> There are no user accounts, no analytics trackers, and no advertising identifiers on this site.</li>
+    </ul>
+
+    <h2>How the Meta integration works</h2>
+    <ul>
+      <li>The app connects to the Meta Marketing API using an access token that you provide, stored only on your own machine.</li>
+      <li>It creates campaigns, ad sets, and ads <strong>only in your own ad account, only when you press Launch, and always in a paused state</strong> — nothing runs or spends until you activate it yourself in Meta Ads Manager.</li>
+      <li>The app reads only what it needs to do this: your ad account's name, currency, and status, and the objects it creates.</li>
+      <li>No Meta user data is stored beyond the access token you supply, and none is shared with any third party.</li>
+    </ul>
+
+    <h2>Generation engines</h2>
+    <p>When you generate a campaign, your product brief is processed by the AI engine you configured (a local Claude Code installation, or the Anthropic API with your own key). Briefs are not sent anywhere else.</p>
+
+    <h2>Data deletion</h2>
+    <p>All app data lives in the <code>data/</code> folder of your installation — delete those files (or the whole folder) to remove everything. To revoke the app's Meta access, remove it at <a href="https://www.facebook.com/settings?tab=business_tools" rel="noopener">facebook.com/settings → Business integrations</a>, or reset the token in your Meta developer app dashboard. To request deletion of anything else, contact the operator of this installation.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy: contact the site operator via the email associated with this deployment.</p>
+  </main>
+</body>
+</html>
