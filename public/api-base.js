@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  var TUNNEL_API_BASE = "https://festival-fuel-imagine-happening.trycloudflare.com"; // set before `netlify deploy`
+  var TUNNEL_API_BASE = "https://acquisition-ink-cad-encourage.trycloudflare.com"; // set before `netlify deploy`
 
   var isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
   var base = !isLocal && /^https:/.test(TUNNEL_API_BASE) ? TUNNEL_API_BASE.replace(/\/$/, "") : "";
