@@ -71,6 +71,33 @@ body {
   min-height: 100vh;
 }
 
+/* ambient aurora glow — a living top-of-page atmosphere on every v4 page */
+body::before {
+  content: "";
+  position: fixed;
+  top: -10vh; left: 50%;
+  width: 140vw; height: 90vh;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(60% 55% at 22% 18%, rgba(91,124,255,0.20), transparent 70%),
+    radial-gradient(55% 55% at 78% 12%, rgba(139,92,246,0.18), transparent 70%),
+    radial-gradient(45% 45% at 55% 0%, rgba(62,230,219,0.10), transparent 70%);
+  filter: blur(20px);
+  opacity: 0.9;
+  animation: aurora-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift {
+  0%   { transform: translateX(-50%) translateY(0) scale(1); }
+  100% { transform: translateX(-48%) translateY(18px) scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
+
 /* film-grain overlay */
 body::after {
   content: "";
@@ -179,12 +206,28 @@ h1, h2, h3, h4 {
   cursor: pointer;
   text-decoration: none;
   box-shadow: var(--glow);
+  position: relative;
+  overflow: hidden;
   transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), filter 0.18s var(--ease);
 }
 
-.k-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+/* moving sheen across primary buttons */
+.k-btn::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.5s var(--ease);
+}
+
+.k-btn:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-2px); box-shadow: 0 0 50px rgba(91,124,255,0.4); }
+.k-btn:hover:not(:disabled)::after { left: 130%; }
 .k-btn:active:not(:disabled) { transform: translateY(0); }
 .k-btn:disabled { opacity: 0.55; cursor: wait; box-shadow: none; }
+
+@media (prefers-reduced-motion: reduce) { .k-btn::after { display: none; } }
 
 .k-btn-ghost {
   display: inline-flex;

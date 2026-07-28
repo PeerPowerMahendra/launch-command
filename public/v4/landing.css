@@ -99,35 +99,30 @@
 
 .hero {
   position: relative;
-  padding: 190px 0 120px;
+  padding: 210px 0 130px;
   overflow: hidden;
 }
 
 .hero-bg { position: absolute; inset: 0; z-index: 0; }
 
-.orb {
+/* cinematic aurora plate behind the hero */
+.hero-aurora {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(110px);
-  opacity: 0.5;
+  top: -8%; left: 50%;
+  transform: translateX(-50%);
+  width: 130%;
+  max-width: none;
+  opacity: 0.62;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, black 40%, transparent 92%);
+  -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 92%);
+  animation: aurora-sway 26s ease-in-out infinite alternate;
 }
 
-.orb-a {
-  width: 560px; height: 560px;
-  background: rgba(91, 124, 255, 0.35);
-  top: -180px; left: -120px;
-  animation: orb-drift-a 26s ease-in-out infinite alternate;
+@keyframes aurora-sway {
+  0%   { transform: translateX(-50%) scale(1); opacity: 0.55; }
+  100% { transform: translateX(-52%) scale(1.05); opacity: 0.7; }
 }
-
-.orb-b {
-  width: 480px; height: 480px;
-  background: rgba(139, 92, 246, 0.28);
-  top: 60px; right: -160px;
-  animation: orb-drift-b 32s ease-in-out infinite alternate;
-}
-
-@keyframes orb-drift-a { to { transform: translate(70px, 50px) scale(1.08); } }
-@keyframes orb-drift-b { to { transform: translate(-60px, 40px) scale(0.94); } }
 
 .hero-grid {
   position: absolute;
@@ -135,10 +130,12 @@
   background-image:
     linear-gradient(rgba(148, 163, 196, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(148, 163, 196, 0.05) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, black 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, black 30%, transparent 75%);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 18%, black 25%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 18%, black 25%, transparent 72%);
 }
+
+@media (prefers-reduced-motion: reduce) { .hero-aurora { animation: none; } }
 
 /* generated launch-trajectory artwork — one path becoming three */
 .hero-art {
@@ -157,19 +154,34 @@
   .hero-art { width: 120%; right: -40%; top: auto; bottom: -6%; opacity: 0.5; }
 }
 
-.hero-inner { max-width: 780px; }
+.hero-inner { max-width: 880px; }
 
 .hero-title {
-  font-size: clamp(2.6rem, 6vw, 4.5rem);
-  letter-spacing: -0.03em;
-  margin: 26px 0 22px;
+  font-size: clamp(3rem, 7.5vw, 6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  margin: 28px 0 26px;
 }
 
+/* animated gradient on the accent line */
+.grad-text {
+  background: linear-gradient(100deg, #8FA6FF, var(--accent-hot), #3EE6DB, #8FA6FF);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: grad-flow 8s linear infinite;
+}
+
+@keyframes grad-flow { to { background-position: 250% center; } }
+@media (prefers-reduced-motion: reduce) { .grad-text { animation: none; } }
+
 .hero-sub {
-  font-size: 18px;
+  font-size: 19px;
   line-height: 1.65;
   color: var(--text-mid);
-  max-width: 620px;
+  max-width: 600px;
   margin-bottom: 34px;
 }
 
@@ -318,7 +330,7 @@
 
 /* ================= PLATFORM STRIP ================= */
 
-.platforms { padding: 34px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-1); }
+.platforms { padding: 30px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: linear-gradient(180deg, rgba(12,18,32,0.6), rgba(7,11,20,0.2)); position: relative; z-index: 2; }
 
 .platforms-inner { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
 
@@ -421,26 +433,53 @@
 
 /* ================= FEATURES ================= */
 
+/* bento grid — varied cell sizes, the first feature spans two columns */
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  grid-auto-rows: 1fr;
+  gap: 16px;
 }
 
-.feature-card { padding: 28px 26px; }
+.feature-card {
+  padding: 30px 28px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card:nth-child(1) { grid-column: span 2; }
+
+/* radial glow that follows into view on hover */
+.feature-card::before {
+  content: "";
+  position: absolute;
+  top: -40%; right: -20%;
+  width: 60%; height: 120%;
+  background: radial-gradient(circle, rgba(91,124,255,0.16), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+  pointer-events: none;
+}
+
+.feature-card.hoverable:hover::before { opacity: 1; }
 
 .feature-icon {
   display: inline-grid;
   place-items: center;
-  width: 46px; height: 46px;
-  border-radius: 12px;
-  background: var(--accent-soft);
+  width: 50px; height: 50px;
+  border-radius: 14px;
+  background: linear-gradient(140deg, var(--accent-soft), rgba(139,92,246,0.12));
+  border: 1px solid rgba(91,124,255,0.25);
   color: #9DB2FF;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
-.feature-card h3 { font-size: 17.5px; margin-bottom: 10px; }
-.feature-card p { font-size: 14.5px; line-height: 1.6; color: var(--text-mid); }
+.feature-card h3 { font-size: 18.5px; margin-bottom: 10px; letter-spacing: -0.01em; }
+.feature-card p { font-size: 14.5px; line-height: 1.62; color: var(--text-mid); }
+.feature-card:nth-child(1) h3 { font-size: 24px; }
+.feature-card:nth-child(1) p { font-size: 16px; max-width: 620px; }
 
 /* ================= HOW ================= */
 
