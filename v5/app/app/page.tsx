@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,23 @@ export default function AppPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [output, setOutput] = useState<unknown>(null);
+  const [engine, setEngine] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/api/status")
+      .then((r) => r.json())
+      .then((d) => setEngine(d.mode))
+      .catch(() => setEngine("none"));
+  }, []);
+
+  const engineLabel =
+    engine === "api"
+      ? "Engine · Anthropic API"
+      : engine === "claude-code"
+        ? "Engine · Local Claude Code"
+        : engine === "none"
+          ? "Engine · not connected"
+          : "";
 
   const generator = GENERATOR_LIST.find((g) => g.id === active)!;
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -84,7 +101,15 @@ export default function AppPage() {
           <Link href="/" className="flex items-center gap-2 text-sm text-ink-muted hover:text-ink">
             <ArrowLeft className="h-4 w-4" /> Launch Command
           </Link>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-ink-faint">Free plan · 3 / month</span>
+          <div className="flex items-center gap-4">
+            {engineLabel && (
+              <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-ink-faint">
+                <span className={`h-1.5 w-1.5 rounded-full ${engine === "api" ? "bg-emerald-400" : engine === "claude-code" ? "bg-amber-400" : "bg-rose-400"}`} />
+                {engineLabel}
+              </span>
+            )}
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink-faint">Free · 3 / month</span>
+          </div>
         </div>
       </header>
 

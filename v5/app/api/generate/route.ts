@@ -9,6 +9,7 @@ import { getUsage, incrementUsage } from "@/lib/usage";
 import { capture } from "@/lib/analytics";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const campaignSchema = z.object({

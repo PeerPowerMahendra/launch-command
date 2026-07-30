@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+/* Validation philosophy: enforce STRUCTURE (the fields the UI renders),
+   not nitpicky limits on creative text. The prompts request exact counts
+   and character limits; hard-failing a whole generation because one
+   headline is 31 chars is bad UX, so limits are guidance, not gates. */
+
 /* ---------------- Campaign Workspace ---------------- */
 
 export const campaignWorkspaceSchema = z.object({
@@ -15,21 +20,19 @@ export const campaignWorkspaceSchema = z.object({
   meta_ads: z
     .array(
       z.object({
-        angle: z.enum(["Hook", "Story", "Offer"]),
+        angle: z.string(), // prompt asks for Hook / Story / Offer
         primary_text: z.string(),
         headline: z.string(),
         description: z.string(),
         cta: z.string(),
       })
     )
-    .length(3),
+    .min(1),
   google_ads: z.object({
-    headlines: z.array(z.string().max(30)).min(8),
-    descriptions: z.array(z.string().max(90)).min(3),
+    headlines: z.array(z.string()).min(1), // prompt: 10 headlines, <=30 chars each
+    descriptions: z.array(z.string()).min(1), // prompt: 4 descriptions, <=90 chars each
   }),
-  email_overview: z
-    .array(z.object({ send_timing: z.string(), goal: z.string() }))
-    .min(3),
+  email_overview: z.array(z.object({ send_timing: z.string(), goal: z.string() })).min(1),
 });
 export type CampaignWorkspaceOutput = z.infer<typeof campaignWorkspaceSchema>;
 
@@ -45,11 +48,11 @@ export const landingPageSchema = z.object({
   problem: z.string(),
   solution: z.object({
     intro: z.string(),
-    bullet_benefits: z.array(z.string()).min(3),
+    bullet_benefits: z.array(z.string()).min(1),
   }),
   social_proof_placeholder: z.string(),
   offer: z.string(),
-  faq: z.array(z.object({ q: z.string(), a: z.string() })).min(3),
+  faq: z.array(z.object({ q: z.string(), a: z.string() })).min(1),
   final_cta: z.object({ headline: z.string(), cta_text: z.string() }),
 });
 export type LandingPageOutput = z.infer<typeof landingPageSchema>;

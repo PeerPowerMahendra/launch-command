@@ -1,18 +1,17 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { execFile } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 import type { z } from "zod";
 import { stripCodeFences } from "./utils";
 import type { CampaignInput, GeneratorConfig } from "./generators/types";
 
 export const MODEL = "claude-sonnet-5";
 
+export type EngineMode = "api" | "claude-code" | "none";
+
 let _client: Anthropic | null = null;
 function client(): Anthropic {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new GenerationError(
-      "ANTHROPIC_API_KEY is not set. Add it to .env.local and restart.",
-      500
-    );
-  }
   if (!_client) _client = new Anthropic();
   return _client;
 }
@@ -25,15 +24,48 @@ export class GenerationError extends Error {
   }
 }
 
-export function isGenerationConfigured(): boolean {
-  return !!process.env.ANTHROPIC_API_KEY;
+/* ── engine selection ─────────────────────────────────────────────
+   "api"         → Anthropic API via ANTHROPIC_API_KEY (production)
+   "claude-code" → local Claude Code CLI (`claude -p`), free, no key
+   Auto: API if a key is set, else the CLI if it's on PATH.
+   Override with GENERATION_MODE=api|claude-code.
+   ------------------------------------------------------------------ */
+
+let _cliAvailable: boolean | null = null;
+function claudeCliAvailable(): boolean {
+  if (_cliAvailable === null) {
+    _cliAvailable = (process.env.PATH || "").split(path.delimiter).some((dir) => {
+      try {
+        fs.accessSync(path.join(dir, "claude"), fs.constants.X_OK);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  }
+  return _cliAvailable;
 }
 
-async function callModel(system: string, prompt: string): Promise<string> {
+export function generationMode(): EngineMode {
+  const forced = (process.env.GENERATION_MODE || "auto").toLowerCase();
+  if (forced === "api") return "api";
+  if (forced === "claude-code") return "claude-code";
+  if (process.env.ANTHROPIC_API_KEY) return "api";
+  if (claudeCliAvailable()) return "claude-code";
+  return "none";
+}
+
+export function isGenerationConfigured(): boolean {
+  return generationMode() !== "none";
+}
+
+/* ── engine 1: Anthropic API ──────────────────────────────────── */
+
+async function callViaApi(system: string, prompt: string): Promise<string> {
   const res = await client().messages.create({
     model: MODEL,
     max_tokens: 8000,
-    system: `${system}\n\nRespond with ONLY a single valid JSON object. No markdown fences, no prose before or after.`,
+    system,
     messages: [{ role: "user", content: prompt }],
   });
   if (res.stop_reason === "max_tokens") throw new GenerationError("Generation was cut off. Try again.");
@@ -42,9 +74,46 @@ async function callModel(system: string, prompt: string): Promise<string> {
   return block.text;
 }
 
+/* ── engine 2: local Claude Code CLI ──────────────────────────── */
+
+function callViaClaudeCode(system: string, prompt: string): Promise<string> {
+  const full = `${system}\n\n${prompt}`;
+  const args = ["-p", full, "--output-format", "json"];
+  if (process.env.CLAUDE_CODE_MODEL) args.push("--model", process.env.CLAUDE_CODE_MODEL);
+
+  return new Promise((resolve, reject) => {
+    execFile("claude", args, { timeout: 240_000, maxBuffer: 16 * 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) {
+        if ((err as NodeJS.ErrnoException).code === "ENOENT")
+          return reject(new GenerationError("Claude Code CLI (`claude`) not found on PATH. Install it or set ANTHROPIC_API_KEY.", 500));
+        if ((err as { killed?: boolean }).killed)
+          return reject(new GenerationError("Local Claude Code generation timed out. Try again.", 504));
+        return reject(new GenerationError(`Local Claude Code failed. ${(stderr || err.message).slice(0, 240)}`, 502));
+      }
+      try {
+        // `--output-format json` wraps the answer as { result: "<text>", ... }
+        const envelope = JSON.parse(stdout);
+        resolve(typeof envelope.result === "string" ? envelope.result : stdout);
+      } catch {
+        resolve(stdout);
+      }
+    });
+  });
+}
+
+/* ── unified call ─────────────────────────────────────────────── */
+
+async function callModel(system: string, prompt: string): Promise<string> {
+  const sys = `${system}\n\nRespond with ONLY a single valid JSON object. No markdown fences, no prose before or after.`;
+  const mode = generationMode();
+  if (mode === "none")
+    throw new GenerationError("No generation engine available. Add ANTHROPIC_API_KEY or install the Claude Code CLI.", 503);
+  return mode === "api" ? callViaApi(sys, prompt) : callViaClaudeCode(sys, prompt);
+}
+
 /**
  * The generic engine every generator shares.
- * form → prompt → Claude → strip fences → zod-validate → one auto-retry.
+ * form → prompt → engine (API or local CLI) → strip fences → zod-validate → one auto-retry.
  */
 export async function runGenerator<T>(
   cfg: GeneratorConfig<T>,
@@ -60,11 +129,9 @@ export async function runGenerator<T>(
   };
 
   try {
-    const output = await attempt();
-    return { output, tokensUsed: 0 };
+    return { output: await attempt(), tokensUsed: 0 };
   } catch (err) {
     if (err instanceof GenerationError) throw err;
-    // one auto-retry with a corrective nudge
     try {
       const output = await attempt(
         "\n\nYour previous response was not valid JSON matching the schema. Return ONLY the corrected JSON object, respecting every field and character limit."
