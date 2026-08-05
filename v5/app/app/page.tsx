@@ -6,6 +6,7 @@ import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GENERATOR_LIST, type PageType } from "@/lib/generators";
 import { BRAND_TONES } from "@/lib/generators/types";
+import { buildDemoOutput } from "@/lib/demo";
 
 const SHARED = [
   { name: "product_name", label: "Product / brand name", placeholder: "e.g. Driftwell", required: true },
@@ -23,6 +24,7 @@ export default function AppPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [output, setOutput] = useState<unknown>(null);
+  const [isDemo, setIsDemo] = useState(false);
   const [engine, setEngine] = useState<string>("");
 
   useEffect(() => {
@@ -37,8 +39,8 @@ export default function AppPage() {
       ? "Engine · Anthropic API"
       : engine === "claude-code"
         ? "Engine · Local Claude Code"
-        : engine === "none"
-          ? "Engine · not connected"
+        : engine === "demo"
+          ? "Engine · Demo (no AI)"
           : "";
 
   const generator = GENERATOR_LIST.find((g) => g.id === active)!;
@@ -69,6 +71,7 @@ export default function AppPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error === "limit_reached" ? "You've hit your free plan limit — upgrade to keep generating." : data.error || "Generation failed.");
       setOutput(data.output);
+      setIsDemo(!!data.demo);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Generation failed.");
     } finally {
@@ -77,7 +80,7 @@ export default function AppPage() {
   }
 
   function loadExample() {
-    setForm({
+    const example = {
       product_name: "Driftwell",
       category: "Weighted sleep mask with a cooling gel core",
       price: "$79 one-time",
@@ -86,12 +89,19 @@ export default function AppPage() {
       usp: "A 340g micro-bead weave applies gentle even pressure over a gel core that stays cool for 8 hours.",
       target_audience: "",
       brand_tone: "Warm and reassuring",
+    };
+    setForm({
+      ...example,
       seo_keywords: "weighted sleep mask, cooling eye mask",
       page_goal: "Purchase",
       sequence_type: "Welcome",
       email_count: "3",
       tone: "warm, reassuring",
     });
+    // Show the static example output immediately — no generation call.
+    setError(null);
+    setOutput(buildDemoOutput(active, example));
+    setIsDemo(true);
   }
 
   return (
@@ -187,7 +197,16 @@ export default function AppPage() {
               <Loader2 className="h-6 w-6 animate-spin text-accent" />
             </div>
           )}
-          {output != null && <OutputView data={output} />}
+          {output != null && (
+            <div className="space-y-4">
+              {isDemo && (
+                <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                  <strong className="font-semibold">Demo data.</strong> This is a static sample — it was not written for your brief. Connect an AI engine (add <code className="rounded bg-black/30 px-1">ANTHROPIC_API_KEY</code> or the Claude Code CLI) to generate real copy.
+                </div>
+              )}
+              <OutputView data={output} />
+            </div>
+          )}
         </div>
       </div>
     </div>

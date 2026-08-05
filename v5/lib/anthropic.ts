@@ -8,7 +8,7 @@ import type { CampaignInput, GeneratorConfig } from "./generators/types";
 
 export const MODEL = "claude-sonnet-5";
 
-export type EngineMode = "api" | "claude-code" | "none";
+export type EngineMode = "api" | "claude-code" | "demo";
 
 let _client: Anthropic | null = null;
 function client(): Anthropic {
@@ -50,13 +50,10 @@ export function generationMode(): EngineMode {
   const forced = (process.env.GENERATION_MODE || "auto").toLowerCase();
   if (forced === "api") return "api";
   if (forced === "claude-code") return "claude-code";
+  if (forced === "demo") return "demo";
   if (process.env.ANTHROPIC_API_KEY) return "api";
   if (claudeCliAvailable()) return "claude-code";
-  return "none";
-}
-
-export function isGenerationConfigured(): boolean {
-  return generationMode() !== "none";
+  return "demo"; // no AI connected → serve static sample data
 }
 
 /* ── engine 1: Anthropic API ──────────────────────────────────── */
@@ -106,8 +103,9 @@ function callViaClaudeCode(system: string, prompt: string): Promise<string> {
 async function callModel(system: string, prompt: string): Promise<string> {
   const sys = `${system}\n\nRespond with ONLY a single valid JSON object. No markdown fences, no prose before or after.`;
   const mode = generationMode();
-  if (mode === "none")
-    throw new GenerationError("No generation engine available. Add ANTHROPIC_API_KEY or install the Claude Code CLI.", 503);
+  // demo is handled at the route level before we ever reach a live engine
+  if (mode === "demo")
+    throw new GenerationError("No live AI engine is connected (demo mode).", 503);
   return mode === "api" ? callViaApi(sys, prompt) : callViaClaudeCode(sys, prompt);
 }
 

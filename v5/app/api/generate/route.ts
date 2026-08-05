@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getGenerator } from "@/lib/generators";
 import { BRAND_TONES } from "@/lib/generators/types";
-import { runGenerator, mapAnthropicError, isGenerationConfigured } from "@/lib/anthropic";
+import { runGenerator, mapAnthropicError, generationMode } from "@/lib/anthropic";
+import { buildDemoOutput } from "@/lib/demo";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getUsage, incrementUsage } from "@/lib/usage";
 import { capture } from "@/lib/analytics";
+import type { PageType } from "@/lib/generators/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,13 +32,6 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  if (!isGenerationConfigured()) {
-    return NextResponse.json(
-      { error: "The AI engine isn't connected yet. Add ANTHROPIC_API_KEY to .env.local and restart." },
-      { status: 503 }
-    );
-  }
-
   let body: z.infer<typeof bodySchema>;
   try {
     body = bodySchema.parse(await req.json());
@@ -46,6 +41,15 @@ export async function POST(req: Request) {
 
   const generator = getGenerator(body.pageType);
   if (!generator) return NextResponse.json({ error: `Unknown generator: ${body.pageType}` }, { status: 400 });
+
+  // Demo mode: no AI connected → return static sample data instantly.
+  if (generationMode() === "demo") {
+    return NextResponse.json({
+      pageType: body.pageType,
+      output: buildDemoOutput(body.pageType as PageType, body.campaign),
+      demo: true,
+    });
+  }
 
   // Auth + identity (graceful when Supabase not wired)
   const supabase = createClient();
