@@ -7,9 +7,12 @@
 
 # No functions, no build command: plain static deploy.
 
-# V4 is the current public face; V2 hidden, V3 stays reachable at /v3/.
+# v5 (on Vercel) is now the sole public face. Everything here — the root and
+# the old v1–v4 paths — forwards to the v5 app. The v1–v4 files stay in the
+# repo (dormant, reversible); they're just no longer served. 302 (temporary)
+# so removing this redirect brings them straight back.
 [[redirects]]
-  from = "/"
-  to = "/v4/"
+  from = "/*"
+  to = "https://launch-command-v5.vercel.app/"
   status = 302
   force = true

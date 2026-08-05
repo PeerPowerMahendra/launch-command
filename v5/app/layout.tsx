@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { VersionToggle } from "@/components/version-toggle";
+// VersionToggle intentionally not rendered: v5 is the sole version now.
+// Component kept in the repo (dormant) so v1–4 can be re-surfaced later.
 
 const geist = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,7 +42,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <body className={`${geist.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <VersionToggle />
           {children}
         </ThemeProvider>
       </body>
