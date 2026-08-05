@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  var V5_URL = "https://launch-command-v5.netlify.app/";
+  var V5_URL = "https://launch-command-v5.vercel.app/";
   var onV4 = location.pathname.indexOf("/v4") === 0;
   var onV3 = location.pathname.indexOf("/v3") === 0;
 
