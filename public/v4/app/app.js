@@ -1,7 +1,7 @@
 /* ================================================================
    LAUNCH COMMAND v3 — workspace logic
-   Brief → /api/v3/generate → platform-tabbed ad review surface.
-   Everything editable persists via debounced PUT /api/v3/campaign.
+   Brief → /api/v4/generate → platform-tabbed ad review surface.
+   Everything editable persists via debounced PUT /api/v4/campaign.
    Depends on window.V3 (v3-shared.js). No frameworks.
    ================================================================ */
 "use strict";
@@ -83,18 +83,41 @@
 
   /* ---------------- 02 · meta cards ---------------- */
 
-  function metaCardEl(ad, i) {
-    const brand = ((state.brief && state.brief.name) || "Your Brand").trim() || "Your Brand";
-    const p = `platform_ads.meta.${i}`;
-    const angle = String(ad.angle || "hook").toLowerCase();
-    const chipKind = angle === "story" ? "accent" : angle === "offer" ? "ok" : "warn";
-    const notes = ad.placement_notes || {};
+  /* Meta is now AD SETS: N audience-targeted sets, each with 5 ads (≥1 hook). */
+  function metaAdSetsEl(meta) {
+    const sets = (meta && meta.ad_sets) || [];
+    if (!sets.length) return "";
+    return sets.map((set, si) => metaSetEl(set, si)).join("");
+  }
+
+  function metaSetEl(set, si) {
+    const base = `platform_ads.meta.ad_sets.${si}`;
+    const ads = set.ads || [];
     return (
-      `<article class="k-card ad-card meta-card reveal-item">` +
+      `<section class="ad-set reveal-item">` +
+      `<div class="k-card ad-set-head">` +
       `<div class="card-head">` +
-      `<span class="k-chip ${chipKind}">${esc(angle)}</span>` +
-      `<span class="k-label">Variant 0${i + 1}</span>` +
-      `<button class="copy-btn" type="button" data-copy="meta:${i}" aria-label="Copy Meta variant ${i + 1}">Copy</button>` +
+      `<span class="k-chip meta">Ad Set ${si + 1}</span>` +
+      `<span class="k-label">${ads.length} ads · ${ads.filter((a) => a.is_hook).length} hook</span>` +
+      `<button class="copy-btn" type="button" data-copy="metaset:${si}" aria-label="Copy ad set ${si + 1}">Copy set</button>` +
+      `</div>` +
+      `<div class="as-name">${edit(`${base}.name`, set.name, { ph: "Ad set name", oneLine: true })}</div>` +
+      `<div class="as-row"><span class="k-label">Audience</span>${edit(`${base}.audience`, set.audience, { ph: "Who this set targets" })}</div>` +
+      `<div class="as-row"><span class="k-label">Targeting</span>${edit(`${base}.targeting`, set.targeting, { ph: "Interest / lookalike / retargeting stack" })}</div>` +
+      `</div>` +
+      `<div class="ad-grid">${ads.map((ad, ai) => metaAdEl(ad, si, ai)).join("")}</div>` +
+      `</section>`
+    );
+  }
+
+  function metaAdEl(ad, si, ai) {
+    const brand = ((state.brief && state.brief.name) || "Your Brand").trim() || "Your Brand";
+    const p = `platform_ads.meta.ad_sets.${si}.ads.${ai}`;
+    return (
+      `<article class="k-card ad-card meta-card">` +
+      `<div class="card-head">` +
+      (ad.is_hook ? `<span class="k-chip warn">Hook</span>` : `<span class="k-chip">Ad 0${ai + 1}</span>`) +
+      `<button class="copy-btn" type="button" data-copy="metaad:${si}:${ai}" aria-label="Copy ad">Copy</button>` +
       `</div>` +
       `<div class="meta-preview">` +
       `<div class="mp-head">` +
@@ -114,12 +137,6 @@
       `</span>` +
       `<span class="mp-cta">${edit(`${p}.cta_button`, ad.cta_button, { ph: "CTA", oneLine: true })}</span>` +
       `</div>` +
-      `</div>` +
-      `<div class="placement-notes">` +
-      `<div class="pn-row targeting-row"><span class="k-label">Targeting</span>${edit(`${p}.targeting`, ad.targeting, { ph: "Audience stack" })}</div>` +
-      ["feed", "reels", "stories"]
-        .map((k) => `<div class="pn-row"><span class="k-label">${k}</span>${edit(`${p}.placement_notes.${k}`, notes[k], { ph: "Placement note" })}</div>`)
-        .join("") +
       `</div>` +
       `</article>`
     );
@@ -295,13 +312,17 @@
     const pg = $("#panel-google");
     const pt = $("#panel-tiktok");
     if (!campaign) {
-      pm.innerHTML = emptyPanel("Meta variants land here", "Three angles — hook, story, offer — rendered as editable feed previews with placement notes.");
+      pm.innerHTML = emptyPanel("Meta ad sets land here", "Audience-targeted ad sets — each with 5 editable ads and at least one hook. Choose how many in the brief.");
       pg.innerHTML = emptyPanel("The Google RSA lands here", "Ten headlines and four descriptions with a live SERP preview you can shuffle.");
       pt.innerHTML = emptyPanel("TikTok scripts land here", "Three vertical scripts with hooks, beats, sound direction, and hashtags.");
       return;
     }
     const pa = campaign.platform_ads || {};
-    pm.innerHTML = `<div class="ad-grid">${(pa.meta || []).map((ad, i) => metaCardEl(ad, i)).join("")}</div>`;
+    pm.innerHTML = metaAdSetsEl(pa.meta);
+    const sets = (pa.meta && pa.meta.ad_sets) || [];
+    const totalAds = sets.reduce((s, set) => s + ((set.ads || []).length), 0);
+    const metaCount = $("#tab-meta .tab-count");
+    if (metaCount) metaCount.textContent = `${sets.length} ad set${sets.length === 1 ? "" : "s"} · ${totalAds} ads`;
     pg.innerHTML = googleRsaEl(pa.google || { headlines: [], descriptions: [] });
     pt.innerHTML = `<div class="tt-grid">${(pa.tiktok || []).map((ad, i) => tiktokCardEl(ad, i)).join("")}</div>`;
     const shuffleBtn = $("#rsa-shuffle");
@@ -379,8 +400,9 @@
     const c = state.campaign;
     if (!c) return;
     const pa = c.platform_ads || {};
+    const metaAds = ((pa.meta && pa.meta.ad_sets) || []).reduce((s, set) => s + ((set.ads || []).length), 0);
     const ads =
-      ((pa.meta || []).length) +
+      metaAds +
       ((pa.tiktok || []).length) +
       (((pa.google || {}).descriptions || []).length);
     const emails = (c.emails || []).length;
@@ -553,6 +575,7 @@
   }
 
   function collectBrief() {
+    const adsetsEl = $("#f-adsets");
     return {
       name: $("#f-name").value,
       category: $("#f-category").value,
@@ -563,6 +586,7 @@
       competitor: $("#f-competitor").value,
       offer: $("#f-offer").value,
       tone: $("#f-tone").value,
+      ad_sets: Number(adsetsEl && adsetsEl.value) || 3,
     };
   }
 
@@ -570,7 +594,7 @@
     const map = {
       name: "f-name", category: "f-category", price: "f-price", problem: "f-problem",
       mechanism: "f-mechanism", audience: "f-audience", competitor: "f-competitor",
-      offer: "f-offer", tone: "f-tone",
+      offer: "f-offer", tone: "f-tone", ad_sets: "f-adsets",
     };
     Object.entries(map).forEach(([key, id]) => {
       const el = document.getElementById(id);
@@ -585,7 +609,7 @@
     setLoading(true);
     const payload = collectBrief();
     try {
-      const data = await fetchJSON("/api/v3/generate", { method: "POST", body: payload });
+      const data = await fetchJSON("/api/v4/generate", { method: "POST", body: payload });
       const isDemo = !!data.demo;
       delete data.demo;
       /* KPI targets are manual — carry them over so a regen never wipes them */
@@ -648,7 +672,7 @@
   async function saveCampaign() {
     if (!state.campaign) return;
     try {
-      await fetchJSON("/api/v3/campaign", { method: "PUT", body: { campaign: state.campaign } });
+      await fetchJSON("/api/v4/campaign", { method: "PUT", body: { campaign: state.campaign } });
       const pip = $("#save-pip");
       pip.classList.add("show");
       clearTimeout(saveCampaign._pipTimer);
@@ -724,28 +748,40 @@
   function buildCopyText(key) {
     const c = state.campaign;
     if (!c) return "";
-    const [kind, idx] = key.split(":");
-    const i = Number(idx);
+    const parts = key.split(":");
+    const kind = parts[0];
+    const i = Number(parts[1]);
     const pa = c.platform_ads || {};
 
     if (kind === "positioning") return String(c.positioning || "").trim();
 
     if (kind === "insight") return String(c.strategic_insight || "").trim();
 
-    if (kind === "meta") {
-      const ad = (pa.meta || [])[i];
-      if (!ad) return "";
-      const notes = ad.placement_notes || {};
-      return [
-        `Meta ad — ${ad.angle} angle`,
-        line("Primary text", ad.primary_text),
+    const adText = (ad) =>
+      [
+        line("Primary text", ad.primary_text) + (ad.is_hook ? "  [HOOK]" : ""),
         line("Headline", ad.headline),
         line("Description", ad.description),
         line("CTA button", ad.cta_button),
-        line("Feed", notes.feed),
-        line("Reels", notes.reels),
-        line("Stories", notes.stories),
       ].join("\n");
+
+    if (kind === "metaad") {
+      const set = ((pa.meta && pa.meta.ad_sets) || [])[i];
+      const ad = set && (set.ads || [])[Number(parts[2])];
+      return ad ? adText(ad) : "";
+    }
+
+    if (kind === "metaset") {
+      const set = ((pa.meta && pa.meta.ad_sets) || [])[i];
+      if (!set) return "";
+      const head = [
+        `${set.name || `Ad Set ${i + 1}`}`,
+        line("Audience", set.audience),
+        line("Targeting", set.targeting),
+        "",
+      ];
+      const ads = (set.ads || []).map((ad, n) => `Ad ${n + 1}${ad.is_hook ? " (hook)" : ""}\n${adText(ad)}`);
+      return head.concat(ads.join("\n\n")).join("\n");
     }
 
     if (kind === "google") {
@@ -913,24 +949,20 @@
     L.push(`> **Unit economics note:** ${mdLine(c.kpi_note)}`);
     L.push("");
 
-    L.push("## 🎯 Module 2: Direct-Response Ad Matrix (Meta)");
+    L.push("## 🎯 Module 2: Direct-Response Ad Matrix (Meta — Ad Sets)");
     L.push("");
-    (pa.meta || []).forEach((ad, i) => {
-      const notes = ad.placement_notes || {};
-      L.push(`### Variant ${"ABC"[i] || i + 1} — ${cap(ad.angle)}`);
+    const adSets = (pa.meta && pa.meta.ad_sets) || [];
+    adSets.forEach((set, si) => {
+      L.push(`### ${set.name || `Ad Set ${si + 1}`}`);
       L.push("");
-      L.push("| Field | Copy |");
-      L.push("|---|---|");
-      L.push(`| Primary Text | ${mdCell(ad.primary_text)} |`);
-      L.push(`| Headline | ${mdCell(ad.headline)} |`);
-      L.push(`| Description | ${mdCell(ad.description)} |`);
-      L.push(`| CTA Button | ${mdCell(ad.cta_button)} |`);
-      L.push(`| Targeting | ${mdCell(ad.targeting)} |`);
+      L.push(`- **Audience:** ${mdLine(set.audience)}`);
+      L.push(`- **Targeting:** ${mdLine(set.targeting)}`);
       L.push("");
-      L.push("**Placement notes**");
-      L.push(`- **Feed:** ${mdLine(notes.feed)}`);
-      L.push(`- **Reels:** ${mdLine(notes.reels)}`);
-      L.push(`- **Stories:** ${mdLine(notes.stories)}`);
+      L.push("| # | Hook | Primary Text | Headline | Description | CTA |");
+      L.push("|---|---|---|---|---|---|");
+      (set.ads || []).forEach((ad, ai) => {
+        L.push(`| ${ai + 1} | ${ad.is_hook ? "✓" : ""} | ${mdCell(ad.primary_text)} | ${mdCell(ad.headline)} | ${mdCell(ad.description)} | ${mdCell(ad.cta_button)} |`);
+      });
       L.push("");
     });
 
@@ -1075,7 +1107,7 @@
     applyEngineHint();
 
     try {
-      const data = await fetchJSON("/api/v3/campaign");
+      const data = await fetchJSON("/api/v4/campaign");
       if (data && data.campaign) {
         state.brief = data.brief || null;
         if (data.brief) fillBriefForm(data.brief);

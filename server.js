@@ -22,6 +22,12 @@ try {
 } catch {
   createV3Router = null;
 }
+let createV4Router = null;
+try {
+  createV4Router = require("./routes-v4");
+} catch {
+  createV4Router = null;
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -200,6 +206,7 @@ app.post("/api/generate", async (req, res) => {
 /* ------------------------------------------------------------------ */
 
 if (createV3Router) app.use("/api/v3", createV3Router({ DATA_DIR }));
+if (createV4Router) app.use("/api/v4", createV4Router({ DATA_DIR }));
 
 /* ------------------------------------------------------------------ */
 /* Kanban board persistence (v2, unchanged)                             */

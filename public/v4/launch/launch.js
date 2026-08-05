@@ -64,7 +64,7 @@
       if (acct.connected) {
         if (!confirm(`Disconnect ${meta.label}?`)) return;
         try {
-          const data = await fetchJSON(`/api/v3/accounts/${key}`, { method: "PUT", body: { connected: false } });
+          const data = await fetchJSON(`/api/v4/accounts/${key}`, { method: "PUT", body: { connected: false } });
           accounts = data.accounts;
           renderAccounts();
           renderComposer();
@@ -76,7 +76,7 @@
       btn.innerHTML = '<span class="acct-spin"></span>&nbsp; Authorizing…';
       setTimeout(async () => {
         try {
-          const data = await fetchJSON(`/api/v3/accounts/${key}`, { method: "PUT", body: { connected: true } });
+          const data = await fetchJSON(`/api/v4/accounts/${key}`, { method: "PUT", body: { connected: true } });
           accounts = data.accounts;
           renderAccounts();
           renderComposer();
@@ -105,8 +105,17 @@
     const pa = campaign.platform_ads;
     const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : "");
     const units = [];
-    (pa.meta || []).forEach((ad, i) =>
-      units.push({ platform: "meta", ad_index: i, name: `Meta · ${cap(ad.angle)}-led`, preview: ad.headline }));
+    // Meta is now ad sets — flatten each set's ads into launchable units (stable order).
+    let mi = 0;
+    (((pa.meta && pa.meta.ad_sets) || [])).forEach((set, si) =>
+      (set.ads || []).forEach((ad, ai) => {
+        units.push({
+          platform: "meta",
+          ad_index: mi++,
+          name: `Meta · Set ${si + 1} · Ad ${ai + 1}${ad.is_hook ? " (hook)" : ""}`,
+          preview: ad.headline || ad.primary_text,
+        });
+      }));
     if (pa.google) {
       units.push({ platform: "google", ad_index: 0, name: "Google · RSA — 10 headlines", preview: pa.google.headlines[0] });
     }
@@ -192,7 +201,7 @@
     const btn = $("#launch-btn");
     btn.disabled = true;
     try {
-      const record = await fetchJSON("/api/v3/launch", {
+      const record = await fetchJSON("/api/v4/launch", {
         method: "POST",
         body: { items, budget_daily: Number($("#budget-input").value) || 50 },
       });
@@ -319,7 +328,7 @@
   $("#reset-btn").addEventListener("click", async () => {
     if (!confirm("Reset the simulation? This clears all launches and disconnects every account.")) return;
     try {
-      await fetchJSON("/api/v3/reset", { method: "POST" });
+      await fetchJSON("/api/v4/reset", { method: "POST" });
       liveSeen.clear();
       selected.clear();
       tilesAnimated = false;
@@ -488,17 +497,17 @@
   /* ================= data + polling ================= */
 
   async function refreshAccounts() {
-    accounts = (await fetchJSON("/api/v3/accounts")).accounts;
+    accounts = (await fetchJSON("/api/v4/accounts")).accounts;
   }
 
   async function refreshCampaign() {
-    const data = await fetchJSON("/api/v3/campaign");
+    const data = await fetchJSON("/api/v4/campaign");
     campaign = data.campaign;
     brief = data.brief;
   }
 
   async function refreshLaunches() {
-    launches = (await fetchJSON("/api/v3/launches")).launches;
+    launches = (await fetchJSON("/api/v4/launches")).launches;
     renderQueue();
     renderHistory();
     renderAnalytics();

@@ -243,4 +243,55 @@ function buildDemoCampaignV3(brief = {}) {
   };
 }
 
-module.exports = { buildDemoCampaign, buildDemoCampaignV3 };
+/* v4 variant: identical to v3 EXCEPT platform_ads.meta becomes ad sets —
+   N audience-differentiated ad sets, each with 5 ads (≥1 hook). */
+function buildDemoCampaignV4(brief = {}, adSetCount = 3) {
+  const base = buildDemoCampaignV3(brief);
+  const name = (brief.name || "").trim() || "Your Product";
+  const shortName = name.length > 22 ? name.slice(0, 22) : name;
+  const offer = (brief.offer || "").trim() || "the launch offer";
+  const n = Math.max(1, Math.min(5, Math.round(Number(adSetCount) || 3)));
+
+  const AUDIENCES = [
+    {
+      name: "Ad Set 1 — Cold interest",
+      audience: "People new to the brand who fit the core problem but have never heard of us.",
+      targeting: "Category + problem-adjacent interests, competitor fans, 1% lookalike of the email list. Broad placements.",
+    },
+    {
+      name: "Ad Set 2 — Warm engagers",
+      audience: "People who've watched our videos or visited the site but haven't bought.",
+      targeting: "Retarget 30-day video viewers (50%+), IG/FB engagers, and site visitors. Exclude purchasers.",
+    },
+    {
+      name: "Ad Set 3 — Hot / cart",
+      audience: "High-intent shoppers who added to cart or hit checkout and left.",
+      targeting: "Retarget cart abandoners + email list custom audience. Exclude purchasers. Frequency-capped.",
+    },
+    {
+      name: "Ad Set 4 — Lookalike of buyers",
+      audience: "People who resemble our best existing customers.",
+      targeting: "1–3% lookalike of purchasers and high-LTV customers. Automatic placements.",
+    },
+    {
+      name: "Ad Set 5 — Sub-niche enthusiasts",
+      audience: "A passionate sub-community that over-indexes on this exact problem.",
+      targeting: "Narrow interest stack around the sub-niche + relevant creators/publications. Feed + Reels.",
+    },
+  ];
+
+  const adsFor = (aud) => [
+    { is_hook: true,  primary_text: `Wait — you've been dealing with this the whole time? ${shortName} was built for exactly ${aud === 0 ? "you" : "this moment"}.`, headline: "Stop tolerating. Start fixing.", description: "The fix that holds.", cta_button: "Learn More" },
+    { is_hook: false, primary_text: `"I was the biggest skeptic. Two weeks in, I stopped thinking about the problem." — an early ${shortName} customer.`, headline: "It finally just worked", description: "From a skeptic like you.", cta_button: "Learn More" },
+    { is_hook: false, primary_text: `Most fixes treat the symptom. ${shortName} goes after the cause — which is why it keeps working.`, headline: "Built to actually last", description: "Cause, not symptom.", cta_button: "Shop Now" },
+    { is_hook: false, primary_text: `No fuss, no routine. ${shortName} works from day one and stays out of your way.`, headline: "Works from day one", description: "Set it and forget it.", cta_button: "Shop Now" },
+    { is_hook: false, primary_text: `Launch week only: ${offer}. The right moment to fix this is the one with the discount.`, headline: "Launch offer ends soon", description: "Claim it before it's gone.", cta_button: "Get Offer" },
+  ];
+
+  const ad_sets = AUDIENCES.slice(0, n).map((a, i) => ({ name: a.name, audience: a.audience, targeting: a.targeting, ads: adsFor(i) }));
+
+  base.platform_ads.meta = { ad_set_count: ad_sets.length, ad_sets };
+  return base;
+}
+
+module.exports = { buildDemoCampaign, buildDemoCampaignV3, buildDemoCampaignV4 };
