@@ -1,8 +1,10 @@
 /* Floating version switcher. V2 is hidden for now (reachable at /index.html);
-   the pill offers V3 (stable) and V4 (latest design). Self-styling, no deps. */
+   the pill offers V3 (stable), V4 (latest design), and V5 (Next.js SaaS,
+   hosted on its own site). Self-styling, no deps. */
 (function () {
   "use strict";
 
+  var V5_URL = "https://launch-command-v5.netlify.app/";
   var onV4 = location.pathname.indexOf("/v4") === 0;
   var onV3 = location.pathname.indexOf("/v3") === 0;
 
@@ -23,7 +25,8 @@
   pill.setAttribute("aria-label", "Version switcher");
   pill.innerHTML =
     '<a href="/v3/" class="' + (onV3 ? "on" : "") + '" title="v3 · stable">V3</a>' +
-    '<a href="/v4/" class="' + (onV4 ? "on" : "") + '" title="v4 · latest design">V4</a>';
+    '<a href="/v4/" class="' + (onV4 ? "on" : "") + '" title="v4 · latest design">V4</a>' +
+    '<a href="' + V5_URL + '" title="v5 · Next.js SaaS">V5</a>';
 
   function mount() {
     document.head.appendChild(style);

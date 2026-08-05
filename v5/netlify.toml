@@ -1,0 +1,8 @@
+# Launch Command v5 — Netlify config (Next.js 14, App Router)
+# Let Netlify's Next.js runtime fully own the build + routing (no custom
+# publish/command overrides — those break SSR route wiring on this runtime).
+# Generation uses the Anthropic API when ANTHROPIC_API_KEY is set in the
+# site's environment; otherwise it falls back to demo mode.
+
+[build.environment]
+  NODE_VERSION = "20"
